@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
-<title>CSCAR — Gestion Comptable</title>
+<title>CSCAR — Gestion SASU</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -84,7 +84,7 @@
 }
 
 body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);overscroll-behavior:none;transition:background 0.25s,color 0.25s}
-.app{min-height:100dvh;display:flex;flex-direction:column;max-width:600px;margin:0 auto;background:var(--bg)}
+.app{min-height:100dvh;display:flex;flex-direction:column;max-width:680px;margin:0 auto;background:var(--bg)}
 
 /* ── HEADER ── */
 header{background:var(--header-bg);padding:11px 14px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:var(--shadow)}
@@ -105,7 +105,7 @@ header{background:var(--header-bg);padding:11px 14px 10px;border-bottom:1px soli
 
 /* ── CONTENT & NAV ── */
 .content{flex:1;overflow-y:auto;padding:0 0 86px}
-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:600px;background:var(--nav-bg);border-top:1px solid var(--border);display:flex;justify-content:space-around;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,0.08)}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:680px;background:var(--nav-bg);border-top:1px solid var(--border);display:flex;justify-content:space-around;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,0.08)}
 nav button{flex:1;background:none;border:none;color:var(--muted2);padding:7px 2px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:color 0.2s}
 nav button.active{color:var(--accent)}
 .nav-icon{font-size:1.1rem}
@@ -157,7 +157,7 @@ nav button.active{color:var(--accent)}
 
 /* Activités */
 .tpv-act-buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px}
-.tpv-act-btn{border:1.5px solid;border-radius:11px;padding:11px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transition:all 0.15s;min-height:70px;background:var(--surface);box-shadow:var(--shadow)}
+.tpv-act-btn{border:1.5px solid;border-radius:11px;padding:9px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transition:all 0.15s;min-height:58px;background:var(--surface);box-shadow:var(--shadow)}
 .tpv-act-btn:active{transform:scale(0.96)}
 .tpv-act-btn .act-icon{font-size:1.4rem;line-height:1}
 .tpv-act-btn .act-name{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.82rem;letter-spacing:1.5px;text-transform:uppercase}
@@ -183,7 +183,7 @@ nav button.active{color:var(--accent)}
 
 /* Clavier numérique */
 .tpv-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px}
-.tpv-key{background:var(--key-bg);border:1px solid var(--key-border);border-radius:10px;height:56px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.5rem;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.1s;user-select:none;box-shadow:var(--shadow)}
+.tpv-key{background:var(--key-bg);border:1px solid var(--key-border);border-radius:8px;height:44px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.15rem;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.1s;user-select:none;box-shadow:var(--shadow)}
 .tpv-key:active{background:var(--surface2);transform:scale(0.95);box-shadow:none}
 .tpv-key.k-zero{grid-column:span 2}
 .tpv-key.k-del{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
@@ -299,6 +299,23 @@ tfoot td{padding:9px 8px;font-size:0.8rem;font-weight:700;font-family:'Barlow Co
 .info-box{background:var(--green-bg);border:1px solid var(--green-border);border-radius:9px;padding:12px 14px;font-size:0.73rem;color:var(--green);margin:0 14px 14px;line-height:1.65}
 .spacer{height:14px}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ── RESPONSIVE PC ── */
+@media (min-width:700px){
+  body{background:#e8eaf0}
+  .app{max-width:680px;margin:20px auto;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.15);min-height:calc(100vh - 40px)}
+  nav{max-width:680px;border-radius:0 0 16px 16px}
+  .tpv-keypad{grid-template-columns:repeat(3,1fr);gap:8px}
+  .tpv-key{height:48px;font-size:1.2rem}
+  .cards-2{grid-template-columns:repeat(2,1fr)}
+  .cards-3{grid-template-columns:repeat(3,1fr)}
+}
+@media (min-width:1024px){
+  body{background:#dde1ea}
+  .app{max-width:720px}
+  nav{max-width:720px}
+}
+
 </style>
 </head>
 <body>
@@ -317,7 +334,7 @@ tfoot td{padding:9px 8px;font-size:0.8rem;font-weight:700;font-family:'Barlow Co
       <circle cx="64" cy="17" r="3" fill="#93c5fd" opacity="0.9"/>
       <circle cx="70" cy="12" r="2" fill="#93c5fd" opacity="0.6"/>
     </svg>
-    <div><div class="brand">CSCAR</div><div class="tagline">Gestion &amp; Comptabilité</div></div>
+    <div><div class="brand">CSCAR</div><div class="tagline">SASU — Gestion &amp; Comptabilité</div></div>
   </div>
   <div class="header-right">
     <div class="saving-icon" id="saving-icon">💾</div>
@@ -330,10 +347,8 @@ tfoot td{padding:9px 8px;font-size:0.8rem;font-weight:700;font-family:'Barlow Co
 <div class="content" id="content"></div>
 <nav>
   <button onclick="setSection('tpv')" id="nav-tpv"><span class="nav-icon">⚡</span><span class="nav-lbl">Encaisser</span></button>
-  <button onclick="setSection('journal')" id="nav-journal"><span class="nav-icon">📋</span><span class="nav-lbl">Journal</span></button>
   <button onclick="setSection('achats')" id="nav-achats"><span class="nav-icon">🛒</span><span class="nav-lbl">Achats</span></button>
-  <button onclick="setSection('annuel')" id="nav-annuel"><span class="nav-icon">📅</span><span class="nav-lbl">Annuel</span></button>
-  <button onclick="setSection('bilan')" id="nav-bilan"><span class="nav-icon">📄</span><span class="nav-lbl">Bilan</span></button>
+  <button onclick="setSection('compta')" id="nav-compta"><span class="nav-icon">📊</span><span class="nav-lbl">Compta</span></button>
 </nav>
 </div>
 
@@ -343,13 +358,13 @@ tfoot td{padding:9px 8px;font-size:0.8rem;font-weight:700;font-family:'Barlow Co
 /* ═══════════════════════════════════ */
 const MOIS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 const MOIS_COURT=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
-const PLAFOND=77700;
+// SASU — pas de plafond micro
 
 const ACTS=[
-  {key:'lavage', label:'Lavage',  icon:'🚿', taux:21.2, btnClass:'btn-lav', jbClass:'jb-lav', color:'#3b82f6'},
-  {key:'location',label:'Location',icon:'🔑', taux:21.2, btnClass:'btn-loc', jbClass:'jb-loc', color:'#8b5cf6'},
-  {key:'vente',  label:'Vente',   icon:'🚗', taux:12.3, btnClass:'btn-ven', jbClass:'jb-ven', color:'#22c55e'},
-  {key:'autre',  label:'Autre',   icon:'📌', taux:21.2, btnClass:'btn-aut', jbClass:'jb-aut', color:'#f97316'},
+  {key:'lavage', label:'Lavage',  icon:'🚿', btnClass:'btn-lav', jbClass:'jb-lav', color:'#3b82f6'},
+  {key:'location',label:'Location',icon:'🔑', btnClass:'btn-loc', jbClass:'jb-loc', color:'#8b5cf6'},
+  {key:'vente',  label:'Vente',   icon:'🚗', btnClass:'btn-ven', jbClass:'jb-ven', color:'#22c55e'},
+  {key:'autre',  label:'Autre',   icon:'📌', btnClass:'btn-aut', jbClass:'jb-aut', color:'#f97316'},
 ];
 const PAYS=[
   {key:'cb',     label:'CB',      icon:'💳'},
@@ -358,10 +373,15 @@ const PAYS=[
 ];
 const CAT_ACHATS=[
   'Carburant','Pièces auto','Produits lavage','Assurance','Loyer / bail',
-  'Électricité / eau','Téléphone / internet','Matériel','Publicité','Sous-traitance','Autre charge'
+  'Électricité / eau','Téléphone / internet','Matériaux (travaux)','Matériel (outils)','Publicité','Sous-traitance','Autre charge'
 ];
 
-const now=new Date(); const CY=now.getFullYear(); const CM=now.getMonth();
+const now=new Date();
+
+// Helper: parse YYYY-MM-DD as local date (no UTC shift)
+function parseLocalDate(s){if(!s)return new Date();const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
+function formatLocalDate(d){return d.toLocaleDateString('fr-FR');}
+ const CY=now.getFullYear(); const CM=now.getMonth();
 let recettes=[], achats=[];
 let settings={nom:'CSCAR',siret:'',activite:'Lavage / Location / Vente auto',gerant:'',adresse:'',codeape:'',regime:'BIC',periodicite:'trimestriel'};
 let section='tpv'; window.filterYear=CY; window.filterMonth=CM; let filterYear=CY,filterMonth=CM;
@@ -412,14 +432,14 @@ function toggleTheme(){
 /* ═══════════════════════════════════ */
 function getAct(k){return ACTS.find(a=>a.key===k)||ACTS[0];}
 function getPay(k){return PAYS.find(p=>p.key===k)||PAYS[0];}
-function cotisArr(arr){return arr.reduce((s,r)=>s+r.amount*(getAct(r.activite).taux/100),0);}
+function cotisArr(arr){return 0;} // SASU — cotisations non applicables
 function sum(arr){return arr.reduce((s,r)=>s+r.amount,0);}
 function sumAct(arr,k){return arr.filter(r=>r.activite===k).reduce((s,r)=>s+r.amount,0);}
-function getMonthRecs(y,m){return recettes.filter(r=>{const d=new Date(r.date);return d.getFullYear()===y&&d.getMonth()===m;});}
-function getYearRecs(y){return recettes.filter(r=>new Date(r.date).getFullYear()===y);}
-function getMonthAchats(y,m){return achats.filter(r=>{const d=new Date(r.date);return d.getFullYear()===y&&d.getMonth()===m;});}
-function getYearAchats(y){return achats.filter(r=>new Date(r.date).getFullYear()===y);}
-function getTodayRecs(){return recettes.filter(r=>r.date===now.toISOString().split('T')[0]);}
+function getMonthRecs(y,m){return recettes.filter(r=>{const d=parseLocalDate(r.date);return d.getFullYear()===y&&d.getMonth()===m;});}
+function getYearRecs(y){return recettes.filter(r=>parseLocalDate(r.date).getFullYear()===y);}
+function getMonthAchats(y,m){return achats.filter(r=>{const d=parseLocalDate(r.date);return d.getFullYear()===y&&d.getMonth()===m;});}
+function getYearAchats(y){return achats.filter(r=>parseLocalDate(r.date).getFullYear()===y);}
+function getTodayRecs(){const td=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');return recettes.filter(r=>r.date===td);}
 function getYears(){return[...new Set([CY,...recettes.map(r=>new Date(r.date).getFullYear()),...achats.map(r=>new Date(r.date).getFullYear())])].sort((a,b)=>b-a);}
 function yopts(years){return years.map(y=>`<option value="${y}"${y===filterYear?'selected':''}>${y}</option>`).join('');}
 function mopts(){return MOIS.map((m,i)=>`<option value="${i}"${i===filterMonth?'selected':''}>${m}</option>`).join('');}
@@ -475,14 +495,16 @@ function getEcheances(){
     ech.push({d,title,desc,url,status,label});
   }
   if(settings.periodicite==='mensuel'){
-    for(let m=0;m<12;m++){const d=new Date(y,m+1,15);add(d.toISOString().split('T')[0],'🔴 URSSAF — '+MOIS[m],'Déclarer le CA de '+MOIS[m]+'\n⚠️ Même si 0€, tu DOIS déclarer !','https://www.autoentrepreneur.urssaf.fr');}
+    for(let m=0;m<12;m++){const d=new Date(y,m+1,15);add(d.toISOString().split('T')[0],'🔴 URSSAF dirigeant — '+MOIS[m],'Cotisations sociales du dirigeant '+MOIS[m],'https://www.urssaf.fr');}
   }else{
     add(y+'-04-30','🔴 URSSAF T1','Déclarer Jan, Fév, Mars\n⚠️ Même si 0€, tu DOIS déclarer !','https://www.autoentrepreneur.urssaf.fr');
-    add(y+'-07-31','🔴 URSSAF T2','Déclarer Avr, Mai, Juin','https://www.autoentrepreneur.urssaf.fr');
-    add(y+'-10-31','🔴 URSSAF T3','Déclarer Juil, Août, Sept','https://www.autoentrepreneur.urssaf.fr');
-    add((y+1)+'-01-31','🔴 URSSAF T4','Déclarer Oct, Nov, Déc','https://www.autoentrepreneur.urssaf.fr');
+    add(y+'-07-31','🔴 URSSAF T2 dirigeant','Cotisations sociales T2','https://www.urssaf.fr');
+    add(y+'-10-31','🔴 URSSAF T3 dirigeant','Cotisations sociales T3','https://www.urssaf.fr');
+    add((y+1)+'-01-31','🔴 URSSAF T4 dirigeant','Cotisations sociales T4','https://www.urssaf.fr');
   }
-  add(y+'-05-31','📋 Déclaration revenus','Déclarer tes revenus sur impots.gouv.fr','https://www.impots.gouv.fr');
+  add(y+'-05-31','📋 Liasse fiscale','Dépôt liasse fiscale + comptes annuels\\n💡 Avec ton comptable','https://www.impots.gouv.fr');
+  add(y+'-06-30','🏛️ Assemblée Générale','AG annuelle SASU — approbation comptes','https://www.inpi.fr');
+  add(y+'-09-15','💰 Acompte IS','Acompte Impôt sur les Sociétés','https://www.impots.gouv.fr');
   add(y+'-12-15','💼 CFE','Paiement CFE\n'+(y===2026?'💡 Exonérée 1ère année !':''),'https://www.impots.gouv.fr');
   return ech.sort((a,b)=>a.d-b.d);
 }
@@ -509,8 +531,9 @@ function setSection(s){
 function render(){
   const c=document.getElementById('content');if(!c)return;
   if(section==='tpv')renderTPV(c);
-  else if(section==='journal')renderJournal(c);
   else if(section==='achats')renderAchats(c);
+  else if(section==='compta')renderCompta(c);
+  else if(section==='journal')renderJournal(c);
   else if(section==='annuel')renderAnnuel(c);
   else if(section==='bilan')renderBilan(c);
   else if(section==='echeances')renderEcheances(c);
@@ -529,9 +552,18 @@ function renderTPV(c){
   c.innerHTML=`
   <div class="tpv-wrapper">
     <!-- Mini stats -->
-    <div class="cards cards-2" style="padding:0;margin-bottom:12px">
+    <div class="cards cards-2" style="padding:0;margin-bottom:10px">
       <div class="card"><div class="card-lbl">Aujourd'hui</div><div class="card-val" style="color:var(--green)">${todayTotal.toFixed(2)} €</div></div>
       <div class="card"><div class="card-lbl">${MOIS_COURT[CM]}</div><div class="card-val" style="color:var(--accent)">${monthTotal.toFixed(2)} €</div></div>
+    </div>
+
+    <!-- Activité EN HAUT -->
+    <div class="section-lbl">Activité</div>
+    <div class="tpv-act-buttons" style="margin-bottom:10px">
+      ${ACTS.map(a=>`<button class="tpv-act-btn ${a.btnClass}${tpvAct===a.key?' sel':''}" onclick="selAct('${a.key}')">
+        <span class="act-icon">${a.icon}</span>
+        <span class="act-name">${a.label}</span>
+      </button>`).join('')}
     </div>
 
     <!-- Afficheur -->
@@ -548,6 +580,14 @@ function renderTPV(c){
       </div>
     </div>
 
+    <!-- Clavier -->
+    <div class="tpv-keypad">
+      ${[7,8,9,4,5,6,1,2,3].map(n=>`<button class="tpv-key" onclick="kp('${n}')">${n}</button>`).join('')}
+      <button class="tpv-key k-zero" onclick="kp('0')">0</button>
+      <button class="tpv-key" onclick="kp('.')">•</button>
+      <button class="tpv-key k-del" onclick="kd()">⌫</button>
+    </div>
+
     <!-- Mode paiement -->
     <div class="section-lbl">Mode de paiement</div>
     <div class="pay-btns">
@@ -555,24 +595,6 @@ function renderTPV(c){
         <span class="pay-icon">${p.icon}</span>
         <span class="pay-lbl">${p.label}</span>
       </button>`).join('')}
-    </div>
-
-    <!-- Activité -->
-    <div class="section-lbl">Activité</div>
-    <div class="tpv-act-buttons">
-      ${ACTS.map(a=>`<button class="tpv-act-btn ${a.btnClass}${tpvAct===a.key?' sel':''}" onclick="selAct('${a.key}')">
-        <span class="act-icon">${a.icon}</span>
-        <span class="act-name">${a.label}</span>
-        <span class="act-rate">Cotis. ${a.taux}%</span>
-      </button>`).join('')}
-    </div>
-
-    <!-- Clavier -->
-    <div class="tpv-keypad">
-      ${[7,8,9,4,5,6,1,2,3].map(n=>`<button class="tpv-key" onclick="kp('${n}')">${n}</button>`).join('')}
-      <button class="tpv-key k-zero" onclick="kp('0')">0</button>
-      <button class="tpv-key" onclick="kp('.')">•</button>
-      <button class="tpv-key k-del" onclick="kd()">⌫</button>
     </div>
 
     <!-- Champs Description / Facture / Date -->
@@ -675,6 +697,23 @@ async function encaisser(){
 }
 
 /* ═══════════════════════════════════ */
+/* COMPTA — sous-menu                 */
+/* ═══════════════════════════════════ */
+let comptaTab='journal';
+function setComptaTab(t){comptaTab=t;section='compta';render();}
+function renderCompta(c){
+  const tabs=[{k:'journal',icon:'📋',lbl:'Journal'},{k:'annuel',icon:'📅',lbl:'Annuel'},{k:'bilan',icon:'📄',lbl:'Bilan'}];
+  const subNav=`<div style="display:flex;gap:6px;padding:12px 14px 0;margin-bottom:0">
+    ${tabs.map(t=>`<button onclick="setComptaTab('${t.k}')" style="flex:1;background:${comptaTab===t.k?'var(--accent)':'var(--surface)'};color:${comptaTab===t.k?'#fff':'var(--muted)'};border:1px solid ${comptaTab===t.k?'var(--accent)':'var(--border)'};border-radius:8px;padding:8px 4px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.72rem;letter-spacing:1px;text-transform:uppercase;cursor:pointer">${t.icon} ${t.lbl}</button>`).join('')}
+  </div>`;
+  c.innerHTML=subNav+'<div id="compta-inner"></div>';
+  const inner=document.getElementById('compta-inner');
+  if(comptaTab==='journal')renderJournal(inner);
+  else if(comptaTab==='annuel')renderAnnuel(inner);
+  else if(comptaTab==='bilan')renderBilan(inner);
+}
+
+/* ═══════════════════════════════════ */
 /* JOURNAL                            */
 /* ═══════════════════════════════════ */
 function renderJournal(c){
@@ -692,10 +731,9 @@ function renderJournal(c){
     <select onchange="filterYear=parseInt(this.value);render()" style="flex:1">${yopts(years)}</select>
     <select onchange="filterMonth=parseInt(this.value);render()" style="flex:2">${mopts()}</select>
   </div>
-  <div class="cards cards-3" style="margin-bottom:12px">
-    <div class="card"><div class="card-lbl">CA</div><div class="card-val" style="color:var(--green)">${monthTotal.toFixed(2)} €</div></div>
-    <div class="card"><div class="card-lbl">Cotis.</div><div class="card-val" style="color:var(--red)">${cotisMois.toFixed(2)} €</div></div>
-    <div class="card" style="border-color:var(--accent-border)"><div class="card-lbl">Net</div><div class="card-val" style="color:var(--accent)">${(monthTotal-cotisMois).toFixed(2)} €</div></div>
+  <div class="cards cards-2" style="margin-bottom:12px">
+    <div class="card"><div class="card-lbl">CA ${MOIS_COURT[filterMonth]}</div><div class="card-val" style="color:var(--green)">${monthTotal.toFixed(2)} €</div></div>
+    <div class="card"><div class="card-lbl">Achats ${MOIS_COURT[filterMonth]}</div><div class="card-val" style="color:var(--red)">-${sum(getMonthAchats(filterYear,filterMonth)).toFixed(2)} €</div></div>
   </div>
   <div class="btn-row">
     <button class="btn-csv" onclick="exportCSV('month')">📋 CSV mois</button>
@@ -710,7 +748,7 @@ function renderJournal(c){
         <div class="journal-info">
           <div class="journal-desc">${r.desc||'—'}</div>
           <div class="journal-meta">
-            <span>${new Date(r.date).toLocaleDateString('fr-FR')}</span>
+            <span>${parseLocalDate(r.date).toLocaleDateString('fr-FR')}</span>
             <span class="pay-chip">${p.icon} ${p.label}</span>
             ${r.facture?`<span style="font-size:0.6rem;color:var(--muted)">#${r.facture}</span>`:''}
           </div>
@@ -755,7 +793,7 @@ function renderAchats(c){
         ${CAT_ACHATS.map(cat=>`<option${achatForm.cat===cat?' selected':''}>${cat}</option>`).join('')}
       </select></div>
       <div class="form-group" style="grid-column:span 2"><label>Description / Fournisseur</label><input type="text" id="a-desc" value="${achatForm.desc}" placeholder="Fournisseur, libellé..." oninput="achatForm.desc=this.value"></div>
-      <div class="form-group"><label>Montant TTC (€)</label><input type="number" id="a-amt" value="${achatForm.amount}" placeholder="0.00" step="0.01" oninput="achatForm.amount=this.value"></div>
+      <div class="form-group" style="grid-column:span 2"><label style="font-size:0.7rem">Montant (€)</label><input type="number" id="a-amt" value="${achatForm.amount}" placeholder="0,00" step="0.01" style="font-size:1.4rem;font-weight:800;padding:12px 14px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px" oninput="achatForm.amount=this.value"></div>
       <div class="form-group"><label>N° Facture fournisseur</label><input type="text" id="a-fac" value="${achatForm.facture}" placeholder="FOURN-2026-001" oninput="achatForm.facture=this.value"></div>
     </div>
     <button class="btn-danger" onclick="addAchat()">🛒 Enregistrer l'achat</button>
@@ -771,7 +809,7 @@ function renderAchats(c){
         <div class="journal-info">
           <div class="journal-desc">${r.desc||'—'}</div>
           <div class="journal-meta">
-            <span>${new Date(r.date).toLocaleDateString('fr-FR')}</span>
+            <span>${parseLocalDate(r.date).toLocaleDateString('fr-FR')}</span>
             ${r.facture?`<span style="font-size:0.6rem;color:var(--muted)">#${r.facture}</span>`:''}
           </div>
         </div>
@@ -788,8 +826,7 @@ function renderAchats(c){
 function renderAnnuel(c){
   const years=getYears();
   const yr=getYearRecs(filterYear), yearTotal=sum(yr), cotisYear=cotisArr(yr);
-  const pct=Math.min(Math.round(yearTotal/PLAFOND*100),100);
-  const barColor=pct>80?'#dc2626':pct>60?'#d97706':'#16a34a';
+
 
   const monthCells=MOIS.map((m,i)=>{
     const mt=sum(getMonthRecs(filterYear,i)),isNow=filterYear===CY&&i===CM;
@@ -822,19 +859,11 @@ function renderAnnuel(c){
     <div class="section-sub">Vue d'ensemble</div>
   </div>
   <div class="filters"><select onchange="filterYear=parseInt(this.value);render()">${yopts(years)}</select></div>
-  <div class="tip">💡 <strong>Plafond micro prestation :</strong> <strong>${PLAFOND.toLocaleString('fr')} €</strong>. Tu me diras quand tu passes en SASU, j'adapterai tout !</div>
+  <div class="tip">💡 <strong>SASU CSCAR</strong> — Résultat = CA − Charges. L'Impôt sur les Sociétés (IS) est calculé par ton comptable sur le bénéfice annuel.</div>
   <div class="cards cards-2" style="margin-bottom:10px">
     <div class="card"><div class="card-lbl">CA ${filterYear}</div><div class="card-val" style="color:#16a34a">${yearTotal.toFixed(2)} €</div></div>
     <div class="card"><div class="card-lbl">Cotisations</div><div class="card-val" style="color:var(--red)">${cotisYear.toFixed(2)} €</div></div>
     <div class="card" style="border-color:var(--accent-border)"><div class="card-lbl">Net estimé</div><div class="card-val" style="color:var(--accent)">${(yearTotal-cotisYear).toFixed(2)} €</div></div>
-    <div class="card"><div class="card-lbl">Plafond</div><div class="card-val" style="color:${barColor}">${pct}%</div></div>
-  </div>
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin:0 14px 12px;box-shadow:var(--shadow)">
-    <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--muted);margin-bottom:6px">
-      <span style="font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase">Progression plafond</span>
-      <span style="font-weight:700;color:${barColor}">${yearTotal.toFixed(0)} € / ${PLAFOND.toLocaleString('fr')} €</span>
-    </div>
-    <div class="progress-bar-wrap"><div class="progress-bar" style="background:${barColor};width:${pct}%"></div></div>
   </div>
   ${actBars?`<div class="act-bar-block"><div class="act-bar-title">Répartition par activité</div>${actBars}</div>`:''}
   <div class="month-grid">${monthCells}</div>
@@ -843,7 +872,7 @@ function renderAnnuel(c){
     <button class="btn-pdf" onclick="exportPDF('year')">📄 PDF annuel</button>
   </div>
   <div class="table-wrap"><div style="overflow-x:auto">
-    <table><thead><tr><th>Mois</th><th class="r">CA</th><th class="r">Achats</th><th class="r">Net</th></tr></thead>
+    <table><thead><tr><th>Mois</th><th class="r">CA</th><th class="r">Achats</th><th class="r">Résultat</th></tr></thead>
     <tbody>${tableRows}</tbody>
     <tfoot><tr><td>TOTAL ${filterYear}</td><td class="r" style="color:#16a34a">${yearTotal.toFixed(2)} €</td><td class="r" style="color:var(--red)">-${sum(getYearAchats(filterYear)).toFixed(2)} €</td><td class="r" style="color:var(--accent)">${(yearTotal-cotisYear).toFixed(2)} €</td></tr></tfoot>
     </table></div></div>`;
@@ -899,13 +928,13 @@ function renderBilan(c){
 
   <!-- Résultat net -->
   <div class="resultat-box">
-    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.82rem;text-transform:uppercase;letter-spacing:2px;color:var(--accent);margin-bottom:12px">Résultat ${filterYear}</div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.82rem;text-transform:uppercase;letter-spacing:2px;color:var(--accent);margin-bottom:12px">Résultat SASU ${filterYear}</div>
     <div class="resultat-row">
       <span class="resultat-lbl">💰 CA Recettes</span>
       <span class="resultat-val" style="color:#16a34a">+ ${yearTotal.toFixed(2)} €</span>
     </div>
     <div class="resultat-row">
-      <span class="resultat-lbl">📊 Cotisations URSSAF</span>
+      <span class="resultat-lbl">📊 Charges (cotisations dirigeant)</span>
       <span class="resultat-val" style="color:var(--red)">- ${cotisYear.toFixed(2)} €</span>
     </div>
     <div class="resultat-row">
@@ -913,7 +942,7 @@ function renderBilan(c){
       <span class="resultat-val" style="color:var(--red)">- ${achYear.toFixed(2)} €</span>
     </div>
     <div class="resultat-row" style="border-top:2px solid var(--border2);margin-top:4px">
-      <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.95rem;text-transform:uppercase;letter-spacing:1px">Résultat net estimé</span>
+      <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.95rem;text-transform:uppercase;letter-spacing:1px">Résultat brut avant IS</span>
       <span style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.3rem;color:${resultatNet>=0?'var(--accent)':'var(--red)'}">${resultatNet>=0?'+':''}${resultatNet.toFixed(2)} €</span>
     </div>
   </div>
@@ -977,7 +1006,7 @@ function renderEcheances(c){
     <div class="section-title">Alertes <span style="color:var(--accent)">${CY}</span></div>
     <div class="section-sub">Obligations légales</div>
   </div>
-  <div class="tip">💡 <strong>3 obligations :</strong> URSSAF (trimestrielle) · Déclaration revenus (mai) · CFE (décembre, exonérée 1ère année)</div>
+  <div class="tip">💡 <strong>Obligations SASU :</strong> URSSAF dirigeant · Liasse fiscale (mai) · AG annuelle (juin) · CFE (décembre) · Acompte IS (sept.)</div>
   <div class="ech-grid">${cards}</div>
   <div class="spacer"></div>`;
 }
@@ -1051,12 +1080,12 @@ function exportPDF(type){
   let solde=0;
   const rows=[...data].sort((a,b)=>a.date.localeCompare(b.date)).map(r=>{
     solde+=r.amount;const a=getAct(r.activite),p=getPay(r.paiement||'cb');
-    return`<tr><td>${new Date(r.date).toLocaleDateString('fr-FR')}</td><td>${r.facture||'—'}</td>
+    return`<tr><td>${parseLocalDate(r.date).toLocaleDateString('fr-FR')}</td><td>${r.facture||'—'}</td>
     <td><span style="background:${a.color}18;color:${a.color};padding:1px 7px;border-radius:3px;font-size:9px;font-weight:700">${a.icon} ${a.label}</span></td>
     <td>${r.desc}</td><td style="font-size:9px;color:#666">${p.icon} ${p.label}</td>
     <td style="text-align:right;color:#16a34a;font-weight:700">${r.amount.toFixed(2)} €</td>
     <td style="text-align:right">${solde.toFixed(2)} €</td></tr>`;}).join('');
-  const acRows=acData.sort((a,b)=>a.date.localeCompare(b.date)).map(r=>`<tr><td>${new Date(r.date).toLocaleDateString('fr-FR')}</td><td>${r.facture||'—'}</td><td>${r.cat}</td><td>${r.desc}</td><td style="text-align:right;color:#dc2626;font-weight:700">-${r.amount.toFixed(2)} €</td></tr>`).join('');
+  const acRows=acData.sort((a,b)=>a.date.localeCompare(b.date)).map(r=>`<tr><td>${parseLocalDate(r.date).toLocaleDateString('fr-FR')}</td><td>${r.facture||'—'}</td><td>${r.cat}</td><td>${r.desc}</td><td style="text-align:right;color:#dc2626;font-weight:700">-${r.amount.toFixed(2)} €</td></tr>`).join('');
   const actSum=ACTS.map(a=>{const v=sumAct(data,a.key);if(!v)return'';return`<div style="display:flex;justify-content:space-between;margin-bottom:3px;font-size:10px"><span style="color:${a.color};font-weight:700">${a.icon} ${a.label}</span><span>CA: ${v.toFixed(2)} € — Cotis. ${(v*a.taux/100).toFixed(2)} €</span></div>`;}).join('');
   const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Bilan CSCAR ${period}</title>
   <style>@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;600&display=swap');
@@ -1079,7 +1108,7 @@ function exportPDF(type){
   .act-title{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#999;margin-bottom:7px;font-weight:700;font-family:'Barlow Condensed',sans-serif}
   .footer{font-size:9px;color:#aaa;border-top:1px solid #eee;padding-top:10px;margin-top:14px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px}
   </style></head><body>
-  <div class="header"><div><div class="brand">CSCAR</div><div class="tagline">Gestion &amp; Comptabilité</div></div><div style="text-align:right;font-size:10px;color:#888">Établi le ${today}</div></div>
+  <div class="header"><div><div class="brand">CSCAR</div><div class="tagline">SASU — Gestion &amp; Comptabilité</div></div><div style="text-align:right;font-size:10px;color:#888">Établi le ${today}</div></div>
   <div class="info-grid"><div><span>Entreprise : </span><strong>${settings.nom}</strong></div><div><span>Gérant : </span><strong>${settings.gerant||'—'}</strong></div><div><span>SIRET : </span><strong>${settings.siret||'—'}</strong></div><div><span>Régime : </span><strong>Micro — ${settings.regime}</strong></div><div><span>Activité : </span><strong>${settings.activite}</strong></div><div><span>Exercice : </span><strong>01/01/${filterYear} — 31/12/${filterYear}</strong></div></div>
   <div class="period">📊 ${type==='month'?'Relevé mensuel':'Bilan annuel'} — ${period}</div>
   ${actSum?`<div class="act-section"><div class="act-title">Répartition par activité</div>${actSum}</div>`:''}
@@ -1108,6 +1137,7 @@ load();
 
 // Expose all functions to global scope for onclick handlers
 window.toggleTheme=toggleTheme;
+window.setComptaTab=setComptaTab;
 window.setSection=setSection;
 window.kp=kp;
 window.kd=kd;
