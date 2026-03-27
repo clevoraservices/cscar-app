@@ -386,9 +386,43 @@ tfoot td{padding:9px 8px;font-size:0.8rem;font-weight:700;font-family:'Barlow Co
   .content{max-width:calc(100% - 130px)}
   nav button{padding:14px 8px}
 }
+
+/* ── STATUT BADGES ── */
+.statut-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.58rem;font-weight:800;letter-spacing:1px;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;flex-shrink:0}
+.statut-regle{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.statut-echelonne{background:#fffbeb;color:#d97706;border:1px solid #fde68a}
+.statut-impaye{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+[data-theme="dark"] .statut-regle{background:#0a1f10;color:#4ade80;border-color:#14532d}
+[data-theme="dark"] .statut-echelonne{background:#1a1000;color:#fbbf24;border-color:#3d2800}
+[data-theme="dark"] .statut-impaye{background:#200a0a;color:#f87171;border-color:#3d1010}
+
+/* ── EDIT MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;width:100%;max-width:420px;box-shadow:var(--shadow-md);max-height:90vh;overflow-y:auto}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.1rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px}
+.modal-footer{display:flex;gap:8px;margin-top:16px}
+.btn-save{flex:1;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:11px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer}
+.btn-cancel{background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:11px 16px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer}
+.statut-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px}
+.statut-btn{border:1.5px solid var(--border);border-radius:8px;padding:8px 4px;cursor:pointer;background:var(--surface);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.72rem;letter-spacing:1px;text-transform:uppercase;color:var(--text2);transition:all 0.15s;text-align:center}
+.statut-btn.sel-regle{border-color:#16a34a;background:#f0fdf4;color:#16a34a}
+.statut-btn.sel-echelonne{border-color:#d97706;background:#fffbeb;color:#d97706}
+.statut-btn.sel-impaye{border-color:#dc2626;background:#fef2f2;color:#dc2626}
 </style>
 </head>
 <body>
+
+<!-- MODAL EDITION -->
+<div class="modal-overlay" id="edit-modal" style="display:none" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="modal-title">✏️ Modifier</div>
+    <div id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-save" onclick="saveEdit()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
 <div class="app" id="app">
 <div class="toast" id="toast" style="opacity:0"></div>
 <header>
@@ -459,6 +493,7 @@ let theme='light';
 
 // TPV state
 let tpvAmt='', tpvAct='lavage', tpvPay='cb', tpvDesc='', tpvDate=now.toISOString().split('T')[0], tpvFacture='';
+let editId=null, editType=null, editObj={};
 // Achat form state
 let achatForm={date:now.toISOString().split('T')[0],desc:'',amount:'',cat:'Carburant',fournisseur:'',facture:''};
 
@@ -529,8 +564,8 @@ async function load(){
   showToast('Chargement...','info');
   try{
     const [recs,ach]=await Promise.all([sbGet('recettes'),sbGet('achats')]);
-    recettes=recs.map(r=>({id:r.id,date:r.date,desc:r.description,amount:parseFloat(r.montant),activite:r.activite||'lavage',paiement:r.paiement||'cb',facture:r.facture||''}));
-    achats=ach.map(r=>({id:r.id,date:r.date,desc:r.description,amount:parseFloat(r.montant),cat:r.categorie||'Autre',fournisseur:r.fournisseur||'',facture:r.facture||''}));
+    recettes=recs.map(r=>({id:r.id,date:r.date,desc:r.description,amount:parseFloat(r.montant),activite:r.activite||'lavage',paiement:r.paiement||'cb',facture:r.facture||'',statut:r.statut||'regle',date_reglement:r.date_reglement||'',mode_reglement:r.mode_reglement||'',nb_echeances:r.nb_echeances||null,date_echeance:r.date_echeance||''}));
+    achats=ach.map(r=>({id:r.id,date:r.date,desc:r.description,amount:parseFloat(r.montant),cat:r.categorie||'Autre',fournisseur:r.fournisseur||'',facture:r.facture||'',statut:r.statut||'impaye',date_reglement:r.date_reglement||'',mode_reglement:r.mode_reglement||'',nb_echeances:r.nb_echeances||null,date_echeance:r.date_echeance||''}));
   }catch(e){showToast('Erreur connexion Supabase','err');console.error(e);}
   try{const s=localStorage.getItem('cscar_cfg');if(s)settings=Object.assign(settings,JSON.parse(s));}catch(e){}
   const th=localStorage.getItem('cscar_theme');
@@ -592,6 +627,164 @@ function updateAlerts(){
 /* ═══════════════════════════════════ */
 /* NAVIGATION                         */
 /* ═══════════════════════════════════ */
+
+/* ═══════════════════════════════════ */
+/* MODAL EDITION + STATUT             */
+/* ═══════════════════════════════════ */
+function getStatutClass(s){return s==='regle'?'statut-regle':s==='echelonne'?'statut-echelonne':'statut-impaye';}
+function getStatutLabel(s){return s==='regle'?'✅ Réglé':s==='echelonne'?'⏳ Échelonné':'❌ Non réglé';}
+
+function closeModal(e){
+  if(e&&e.target!==document.getElementById('edit-modal'))return;
+  document.getElementById('edit-modal').style.display='none';
+  editId=null;editType=null;editObj={};
+}
+
+function openEditRec(id){
+  const r=recettes.find(x=>x.id===id);if(!r)return;
+  editId=id;editType='rec';editObj={...r};
+  const statut=r.statut||'regle';
+  const modal=document.getElementById('edit-modal');
+  document.getElementById('modal-title').textContent='✏️ Modifier recette';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-group" style="margin-bottom:9px"><label>Date</label>
+      <input type="date" id="e-date" value="${r.date}"></div>
+    <div class="form-group" style="margin-bottom:9px"><label>Description</label>
+      <input type="text" id="e-desc" value="${r.desc||''}"></div>
+    <div class="form-group" style="margin-bottom:9px"><label>Montant (€)</label>
+      <input type="number" id="e-amt" value="${r.amount}" step="0.01"></div>
+    <div class="form-group" style="margin-bottom:9px"><label>Activité</label>
+      <select id="e-act">${ACTS.map(a=>`<option value="${a.key}"${r.activite===a.key?' selected':''}>${a.icon} ${a.label}</option>`).join('')}</select></div>
+    <div class="form-group" style="margin-bottom:9px"><label>N° Facture</label>
+      <input type="text" id="e-fac" value="${r.facture||''}"></div>
+    <div class="form-group" style="margin-bottom:6px"><label>Statut paiement</label></div>
+    <div class="statut-btns" id="statut-btns-rec">
+      <button class="statut-btn${statut==='regle'?' sel-regle':''}" onclick="selStatut('rec','regle')">✅ Réglé</button>
+      <button class="statut-btn${statut==='echelonne'?' sel-echelonne':''}" onclick="selStatut('rec','echelonne')">⏳ Échelonné</button>
+      <button class="statut-btn${statut==='impaye'?' sel-impaye':''}" onclick="selStatut('rec','impaye')">❌ Non réglé</button>
+    </div>
+    <div id="statut-extra-rec">${renderStatutExtra(statut, r)}</div>
+  `;
+  editObj.statut=statut;
+  modal.style.display='flex';
+}
+
+function openEditAchat(id){
+  const r=achats.find(x=>x.id===id);if(!r)return;
+  editId=id;editType='achat';editObj={...r};
+  const statut=r.statut||'regle';
+  document.getElementById('modal-title').textContent='✏️ Modifier achat';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-group" style="margin-bottom:9px"><label>Date</label>
+      <input type="date" id="e-date" value="${r.date}"></div>
+    <div class="form-group" style="margin-bottom:9px"><label>Description / Fournisseur</label>
+      <input type="text" id="e-desc" value="${r.desc||''}"></div>
+    <div class="form-group" style="margin-bottom:9px"><label>Montant (€)</label>
+      <input type="number" id="e-amt" value="${r.amount}" step="0.01"></div>
+    <div class="form-group" style="margin-bottom:9px"><label>Catégorie</label>
+      <select id="e-cat">${CAT_ACHATS.map(c=>`<option${r.cat===c?' selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="form-group" style="margin-bottom:9px"><label>N° Facture</label>
+      <input type="text" id="e-fac" value="${r.facture||''}"></div>
+    <div class="form-group" style="margin-bottom:6px"><label>Statut paiement</label></div>
+    <div class="statut-btns" id="statut-btns-achat">
+      <button class="statut-btn${statut==='regle'?' sel-regle':''}" onclick="selStatut('achat','regle')">✅ Réglé</button>
+      <button class="statut-btn${statut==='echelonne'?' sel-echelonne':''}" onclick="selStatut('achat','echelonne')">⏳ Échelonné</button>
+      <button class="statut-btn${statut==='impaye'?' sel-impaye':''}" onclick="selStatut('achat','impaye')">❌ Non réglé</button>
+    </div>
+    <div id="statut-extra-achat">${renderStatutExtra(statut, r)}</div>
+  `;
+  editObj.statut=statut;
+  document.getElementById('edit-modal').style.display='flex';
+}
+
+function renderStatutExtra(statut, r){
+  if(statut==='regle') return `
+    <div class="form-group" style="margin-top:8px"><label>Date de règlement</label>
+      <input type="date" id="e-date-reg" value="${r.date_reglement||''}"></div>
+    <div class="form-group" style="margin-top:8px"><label>Mode paiement (facultatif)</label>
+      <select id="e-mode-reg">
+        <option value="">— Non précisé —</option>
+        ${PAYS.map(p=>`<option value="${p.key}"${r.mode_reglement===p.key?' selected':''}>${p.icon} ${p.label}</option>`).join('')}
+      </select></div>`;
+  if(statut==='echelonne') return `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+      <div class="form-group"><label>Nb d'échéances</label>
+        <input type="number" id="e-nb-ech" value="${r.nb_echeances||2}" min="2" max="36"></div>
+      <div class="form-group"><label>1ère échéance</label>
+        <input type="date" id="e-date-ech" value="${r.date_echeance||''}"></div>
+    </div>
+    <div class="form-group" style="margin-top:8px"><label>Mode paiement (facultatif)</label>
+      <select id="e-mode-reg">
+        <option value="">— Non précisé —</option>
+        ${PAYS.map(p=>`<option value="${p.key}"${r.mode_reglement===p.key?' selected':''}>${p.icon} ${p.label}</option>`).join('')}
+      </select></div>`;
+  if(statut==='impaye') return `
+    <div class="form-group" style="margin-top:8px"><label>Date d'échéance prévue</label>
+      <input type="date" id="e-date-ech" value="${r.date_echeance||''}"></div>`;
+  return '';
+}
+
+function selStatut(type, statut){
+  editObj.statut=statut;
+  const btnsId='statut-btns-'+type;
+  const extraId='statut-extra-'+type;
+  const btns=document.querySelectorAll('#'+btnsId+' .statut-btn');
+  btns.forEach(b=>b.className='statut-btn');
+  const idx=statut==='regle'?0:statut==='echelonne'?1:2;
+  const cls=statut==='regle'?'sel-regle':statut==='echelonne'?'sel-echelonne':'sel-impaye';
+  btns[idx].classList.add(cls);
+  const extra=document.getElementById(extraId);
+  if(extra)extra.innerHTML=renderStatutExtra(statut,editObj);
+}
+
+function getExtraFields(statut){
+  const out={};
+  out.statut=statut;
+  if(statut==='regle'){
+    const dr=document.getElementById('e-date-reg');if(dr)out.date_reglement=dr.value;
+    const mr=document.getElementById('e-mode-reg');if(mr)out.mode_reglement=mr.value;
+  }else if(statut==='echelonne'){
+    const ne=document.getElementById('e-nb-ech');if(ne)out.nb_echeances=parseInt(ne.value)||2;
+    const de=document.getElementById('e-date-ech');if(de)out.date_echeance=de.value;
+    const mr=document.getElementById('e-mode-reg');if(mr)out.mode_reglement=mr.value;
+  }else if(statut==='impaye'){
+    const de=document.getElementById('e-date-ech');if(de)out.date_echeance=de.value;
+  }
+  return out;
+}
+
+async function saveEdit(){
+  const date=document.getElementById('e-date')?.value;
+  const desc=document.getElementById('e-desc')?.value;
+  const amt=parseFloat(document.getElementById('e-amt')?.value);
+  const fac=document.getElementById('e-fac')?.value||'';
+  const extra=getExtraFields(editObj.statut||'regle');
+  if(!date||isNaN(amt)){showToast('Données invalides','err');return;}
+  if(editType==='rec'){
+    const act=document.getElementById('e-act')?.value||editObj.activite;
+    const updated={...editObj,date,desc,amount:amt,activite:act,facture:fac,...extra};
+    try{
+      await fetch(`${SUPA_URL}/rest/v1/recettes?id=eq.${editId}`,{method:'PATCH',headers:{...H,'Prefer':'return=representation'},
+        body:JSON.stringify({date,description:desc,montant:amt,activite:act,facture:fac||null,...extra})});
+      const idx=recettes.findIndex(r=>r.id===editId);
+      if(idx>=0)recettes[idx]=updated;
+      showToast('Recette modifiée ✓');
+    }catch(e){showToast('Erreur','err');console.error(e);}
+  }else if(editType==='achat'){
+    const cat=document.getElementById('e-cat')?.value||editObj.cat;
+    const updated={...editObj,date,desc,amount:amt,cat,facture:fac,...extra};
+    try{
+      await fetch(`${SUPA_URL}/rest/v1/achats?id=eq.${editId}`,{method:'PATCH',headers:{...H,'Prefer':'return=representation'},
+        body:JSON.stringify({date,description:desc,montant:amt,categorie:cat,facture:fac||null,...extra})});
+      const idx=achats.findIndex(r=>r.id===editId);
+      if(idx>=0)achats[idx]=updated;
+      showToast('Achat modifié ✓');
+    }catch(e){showToast('Erreur','err');console.error(e);}
+  }
+  document.getElementById('edit-modal').style.display='none';
+  render();
+}
+
 function setSection(s){
   section=s;
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
@@ -703,7 +896,13 @@ function renderTPV(c){
         </div>
       </div>
       <span class="j-amount" style="color:var(--green)">+${r.amount.toFixed(2)} €</span>
-      <button class="del-btn" onclick="delRec(${r.id})">✕</button>
+      <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">
+        <span class="statut-badge ${getStatutClass(r.statut||'regle')}">${getStatutLabel(r.statut||'regle')}</span>
+        <div style="display:flex;gap:4px">
+          <button style="background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);border-radius:4px;padding:2px 6px;font-size:0.63rem;cursor:pointer;font-weight:700" onclick="openEditRec(${r.id})">✏️</button>
+          <button class="del-btn" onclick="delRec(${r.id})">✕</button>
+        </div>
+      </div>
     </div>`;}).join('')}
     ${todayRecs.length>5?`<div style="text-align:center;font-size:0.7rem;color:var(--muted);padding:4px 0">+${todayRecs.length-5} → voir Journal</div>`:''}`:''}
   </div>`;
@@ -825,7 +1024,13 @@ function renderJournal(c){
         </div>
       </div>
       <span class="j-amount" style="color:var(--green)">+${r.amount.toFixed(2)} €</span>
-      <button class="del-btn" onclick="delRec(${r.id})">✕</button>
+      <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">
+        <span class="statut-badge ${getStatutClass(r.statut||'regle')}">${getStatutLabel(r.statut||'regle')}</span>
+        <div style="display:flex;gap:4px">
+          <button style="background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);border-radius:4px;padding:2px 6px;font-size:0.63rem;cursor:pointer;font-weight:700" onclick="openEditRec(${r.id})">✏️</button>
+          <button class="del-btn" onclick="delRec(${r.id})">✕</button>
+        </div>
+      </div>
     </div>`;}).join('')}
   </div><div class="spacer"></div>`;
 }
@@ -885,7 +1090,13 @@ function renderAchats(c){
         </div>
       </div>
       <span class="j-amount" style="color:var(--red)">-${r.amount.toFixed(2)} €</span>
-      <button class="del-btn" onclick="delAchat(${r.id})">✕</button>
+      <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">
+        <span class="statut-badge ${getStatutClass(r.statut||'impaye')}">${getStatutLabel(r.statut||'impaye')}</span>
+        <div style="display:flex;gap:4px">
+          <button style="background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);border-radius:4px;padding:2px 6px;font-size:0.63rem;cursor:pointer;font-weight:700" onclick="openEditAchat(${r.id})">✏️</button>
+          <button class="del-btn" onclick="delAchat(${r.id})">✕</button>
+        </div>
+      </div>
     </div>`).join('')}
   </div><div class="spacer"></div>`;
 }
@@ -1208,6 +1419,11 @@ load();
 // Expose all functions to global scope for onclick handlers
 window.toggleTheme=toggleTheme;
 window.setComptaTab=setComptaTab;
+window.openEditRec=openEditRec;
+window.openEditAchat=openEditAchat;
+window.closeModal=closeModal;
+window.saveEdit=saveEdit;
+window.selStatut=selStatut;
 window.setSection=setSection;
 window.kp=kp;
 window.kd=kd;
