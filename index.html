@@ -87,7 +87,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);over
 .app{min-height:100dvh;display:flex;flex-direction:column;max-width:680px;margin:0 auto;background:var(--bg)}
 
 /* ── HEADER ── */
-header{background:var(--header-bg);padding:11px 14px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:var(--shadow)}
+header{background:var(--header-bg);padding:11px 14px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:var(--shadow);width:100%;flex-shrink:0}
 .logo-wrap{display:flex;align-items:center;gap:9px}
 .brand{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.4rem;letter-spacing:3px;line-height:1;color:var(--text)}
 .tagline{font-size:0.5rem;letter-spacing:2.5px;color:var(--accent);text-transform:uppercase;font-weight:700}
@@ -300,22 +300,92 @@ tfoot td{padding:9px 8px;font-size:0.8rem;font-weight:700;font-family:'Barlow Co
 .spacer{height:14px}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
-/* ── RESPONSIVE PC ── */
-@media (min-width:700px){
-  body{background:#e8eaf0}
-  .app{max-width:680px;margin:20px auto;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.15);min-height:calc(100vh - 40px)}
-  nav{max-width:680px;border-radius:0 0 16px 16px}
-  .tpv-keypad{grid-template-columns:repeat(3,1fr);gap:8px}
-  .tpv-key{height:48px;font-size:1.2rem}
-  .cards-2{grid-template-columns:repeat(2,1fr)}
-  .cards-3{grid-template-columns:repeat(3,1fr)}
-}
-@media (min-width:1024px){
-  body{background:#dde1ea}
   .app{max-width:720px}
   nav{max-width:720px}
 }
 
+
+/* ── RESPONSIVE PC ── */
+@media (min-width:768px){
+  body{background:#dde2ea;display:flex;align-items:flex-start;justify-content:center;min-height:100vh;padding:24px}
+  .app{
+    max-width:100%;
+    width:100%;
+    min-height:calc(100vh - 48px);
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow:0 8px 40px rgba(0,0,0,0.18);
+    flex-direction:row;
+    flex-wrap:wrap;
+    position:relative;
+  }
+  header{
+    width:100%;
+    position:sticky;
+    top:0;
+    z-index:200;
+    flex-shrink:0;
+  }
+  /* Sidebar nav on left */
+  nav{
+    position:sticky;
+    top:57px;
+    left:0;
+    bottom:auto;
+    transform:none;
+    width:110px;
+    height:calc(100vh - 57px);
+    flex-direction:column;
+    justify-content:flex-start;
+    padding:16px 0;
+    border-top:none;
+    border-right:1px solid var(--border);
+    border-radius:0;
+    gap:4px;
+    box-shadow:none;
+    flex-shrink:0;
+    align-self:flex-start;
+  }
+  nav button{
+    flex:none;
+    width:100%;
+    padding:12px 8px;
+    border-radius:8px;
+    margin:0 6px;
+    width:calc(100% - 12px);
+  }
+  nav button.active{
+    background:var(--accent-bg);
+  }
+  .nav-icon{font-size:1.4rem}
+  .nav-lbl{font-size:0.6rem}
+  /* Main content fills rest */
+  .content{
+    flex:1;
+    padding-bottom:24px;
+    min-width:0;
+    max-width:calc(100% - 110px);
+  }
+  /* Alert banner full width */
+  .alert-banner{width:100%}
+  /* Wider cards */
+  .cards-2{grid-template-columns:repeat(2,1fr)}
+  .cards-3{grid-template-columns:repeat(3,1fr)}
+  /* TPV keypad bigger on desktop */
+  .tpv-key{height:52px;font-size:1.25rem}
+  .tpv-act-buttons{grid-template-columns:repeat(4,1fr)}
+  /* Forms wider */
+  .form-grid{grid-template-columns:repeat(3,1fr)}
+  /* Month grid */
+  .month-grid{grid-template-columns:repeat(6,1fr)}
+}
+@media (min-width:1100px){
+  body{padding:32px 48px}
+  .app{border-radius:20px}
+  nav{width:130px}
+  .content{max-width:calc(100% - 130px)}
+  nav button{padding:14px 8px}
+}
 </style>
 </head>
 <body>
@@ -782,7 +852,7 @@ function renderAchats(c){
     <div class="card"><div class="card-lbl">Achats ${MOIS_COURT[filterMonth]}</div><div class="card-val" style="color:var(--red)">${monthTotal.toFixed(2)} €</div></div>
     <div class="card"><div class="card-lbl">Achats ${filterYear}</div><div class="card-val" style="color:var(--red)">${sum(getYearAchats(filterYear)).toFixed(2)} €</div></div>
   </div>
-  <div class="tip">💡 En micro-entreprise, les achats ne sont <strong>pas déductibles fiscalement</strong> (abattement forfaitaire). Cependant, les noter permet de suivre ta rentabilité réelle et de préparer une éventuelle transition en SASU.</div>
+  <div class="tip">💡 En SASU, les charges sont <strong>déductibles du résultat</strong>. Elles réduisent le bénéfice imposable à l'IS. Note toutes tes factures fournisseurs ici.</div>
 
   <!-- Formulaire ajout achat -->
   <div class="form-box">
