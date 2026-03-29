@@ -105,11 +105,11 @@ header{background:var(--header-bg);padding:11px 14px 10px;border-bottom:1px soli
 
 /* ── CONTENT & NAV ── */
 .content{flex:1;overflow-y:auto;padding:0 0 80px}
-nav{position:fixed;bottom:0;left:0;right:0;width:100%;background:var(--nav-bg);border-top:2px solid var(--accent);display:flex;justify-content:space-around;z-index:999;box-shadow:0 -2px 8px rgba(0,0,0,0.1)}
-nav button{flex:1;background:none;border:none;color:var(--muted2);padding:12px 6px 14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;transition:color 0.2s;min-height:64px}
+nav{position:fixed;bottom:0;left:0;right:0;width:100%;background:var(--nav-bg);border-top:2px solid var(--accent);display:flex;z-index:999;box-shadow:0 -2px 8px rgba(0,0,0,0.1)}
+nav button{flex:1;background:none;border:none;color:var(--muted2);padding:10px 0 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:color 0.2s;min-height:60px;max-width:33.33%}
 nav button.active{color:var(--accent)}
-.nav-icon{font-size:1.4rem;line-height:1}
-.nav-lbl{font-size:0.62rem;letter-spacing:1px;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;font-weight:700}
+.nav-icon{font-size:1.3rem;line-height:1}
+.nav-lbl{font-size:0.6rem;letter-spacing:0.5px;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;font-weight:700}
 
 /* ── CARDS ── */
 .cards{display:grid;gap:8px;padding:0 14px;margin-bottom:12px}
@@ -322,11 +322,23 @@ tfoot td{padding:9px 8px;font-size:0.8rem;font-weight:700;font-family:'Barlow Co
 
 
 
-@media(min-width:640px){
-  body{background:#d8dce6;display:flex;justify-content:center;padding-top:20px}
-  .app{max-width:500px;width:500px;border-radius:16px 16px 0 0;box-shadow:0 4px 32px rgba(0,0,0,0.15);min-height:calc(100vh - 20px)}
-  nav{left:50%;transform:translateX(-50%);width:500px}
-}
+@media(min-width:640px){body{background:#d8dce6;display:flex;justify-content:center;padding-top:20px}.app{max-width:520px;width:520px;border-radius:16px 16px 0 0;box-shadow:0 4px 32px rgba(0,0,0,0.15);min-height:calc(100vh - 20px)}nav{left:50%;transform:translateX(-50%);width:520px!important}}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.25);max-height:88vh;overflow-y:auto}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.1rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;color:var(--text)}
+.modal-footer{display:flex;gap:8px;margin-top:16px}
+.btn-save{flex:1;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:11px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer}
+.btn-cancel{background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:11px 16px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer}
+.statut-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px}
+.statut-btn{border:1.5px solid var(--border);border-radius:8px;padding:9px 4px;cursor:pointer;background:var(--surface);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.7rem;letter-spacing:1px;text-transform:uppercase;color:var(--text2);transition:all 0.15s;text-align:center}
+.statut-btn.sel-regle{border-color:#16a34a;background:var(--green-bg);color:#16a34a}
+.statut-btn.sel-echelonne{border-color:#d97706;background:var(--gold-bg);color:#d97706}
+.statut-btn.sel-impaye{border-color:#dc2626;background:var(--red-bg);color:#dc2626}
+.statut-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.58rem;font-weight:800;letter-spacing:1px;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;flex-shrink:0}
+.statut-regle{background:var(--green-bg);color:#16a34a;border:1px solid var(--green-border)}
+.statut-echelonne{background:var(--gold-bg);color:#d97706;border:1px solid var(--gold-border)}
+.statut-impaye{background:var(--red-bg);color:#dc2626;border:1px solid var(--red-border)}
 </style>
 </head>
 <body>
@@ -361,6 +373,7 @@ tfoot td{padding:9px 8px;font-size:0.8rem;font-weight:700;font-family:'Barlow Co
   </div>
   <div class="header-right">
     <div class="saving-icon" id="saving-icon">💾</div>
+    <button class="theme-btn" onclick="setSection('settings')" title="Réglages">⚙️</button>
     <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">🌙</button>
     <div id="alert-badge" class="badge-alert" style="display:none" onclick="setSection('echeances')"></div>
     <div class="today-lbl" id="today-lbl"></div>
@@ -715,6 +728,7 @@ function render(){
   if(section==='tpv')renderTPV(c);
   else if(section==='achats')renderAchats(c);
   else if(section==='compta')renderCompta(c);
+  else if(section==='settings')renderSettings(c);
   else if(section==='journal')renderJournal(c);
   else if(section==='annuel')renderAnnuel(c);
   else if(section==='bilan')renderBilan(c);
@@ -899,8 +913,38 @@ function renderCompta(c){
   if(comptaTab==='journal')renderJournal(inner);
   else if(comptaTab==='annuel')renderAnnuel(inner);
   else if(comptaTab==='bilan')renderBilan(inner);
+
 }
 
+
+/* ═══════════════════════════════════ */
+/* PARAMÈTRES                         */
+/* ═══════════════════════════════════ */
+function renderSettings(c){
+  c.innerHTML=`
+  <div class="section-header">
+    <div class="section-title">⚙️ <span style="color:var(--accent)">Réglages</span></div>
+    <div class="section-sub">Informations de l'entreprise</div>
+  </div>
+  <div class="form-box" style="margin:0 14px 14px">
+    <div class="form-box-title" style="color:var(--accent)">Entreprise</div>
+    <div class="form-grid">
+      ${[['nom','Nom entreprise','CSCAR'],['gerant','Gérant','Prénom NOM'],['siret','SIRET','12345678900000'],['codeape','Code APE','4520A'],['activite','Activité','Lavage / Location / Vente'],['adresse','Adresse','1 rue exemple']].map(([k,l,p])=>`
+      <div class="form-group"><label>${l}</label><input type="text" id="s-${k}" value="${settings[k]||''}" placeholder="${p}"></div>`).join('')}
+      <div class="form-group"><label>URSSAF</label><select id="s-peri">
+        <option value="trimestriel"${settings.periodicite==='trimestriel'?' selected':''}>Trimestrielle</option>
+        <option value="mensuel"${settings.periodicite==='mensuel'?' selected':''}>Mensuelle</option>
+      </select></div>
+      <div class="form-group"><label>Régime</label><select id="s-reg">
+        <option value="BIC"${settings.regime==='BIC'?' selected':''}>BIC</option>
+        <option value="BNC"${settings.regime==='BNC'?' selected':''}>BNC</option>
+      </select></div>
+    </div>
+    <button class="btn-primary" onclick="saveSet()">💾 Sauvegarder</button>
+  </div>
+  <div class="info-box">☁️ <strong>Sauvegarde automatique</strong><br>Tes recettes et achats sont conservés sur ton compte Supabase. Accessibles depuis mobile et PC.</div>
+  <div class="spacer"></div>`;
+}
 /* ═══════════════════════════════════ */
 /* JOURNAL                            */
 /* ═══════════════════════════════════ */
@@ -1163,23 +1207,7 @@ function renderBilan(c){
     </div>
   </div>`:''}
 
-  <!-- Paramètres -->
-  <div class="form-box">
-    <div class="form-box-title" style="color:var(--accent)">⚙️ Paramètres entreprise</div>
-    <div class="form-grid">
-      ${[['nom','Nom entreprise','CSCAR'],['gerant','Gérant','Prénom NOM'],['siret','SIRET','12345678900000'],['codeape','Code APE','4520A'],['activite','Activité','Lavage / Location / Vente'],['adresse','Adresse','1 rue exemple']].map(([k,l,p])=>`
-      <div class="form-group"><label>${l}</label><input type="text" id="s-${k}" value="${settings[k]||''}" placeholder="${p}"></div>`).join('')}
-      <div class="form-group"><label>URSSAF</label><select id="s-peri">
-        <option value="trimestriel"${settings.periodicite==='trimestriel'?' selected':''}>Trimestrielle</option>
-        <option value="mensuel"${settings.periodicite==='mensuel'?' selected':''}>Mensuelle</option>
-      </select></div>
-      <div class="form-group"><label>Régime</label><select id="s-reg">
-        <option value="BIC"${settings.regime==='BIC'?' selected':''}>BIC</option>
-        <option value="BNC"${settings.regime==='BNC'?' selected':''}>BNC</option>
-      </select></div>
-    </div>
-    <button class="btn-primary" onclick="saveSet()">💾 Sauvegarder</button>
-  </div>
+
   <div class="info-box">☁️ <strong>Sauvegarde automatique</strong><br>Toutes tes recettes et achats sont conservés sur ton compte Claude. Ils seront là demain, en fin de mois, pour tous tes exports.</div>
   <div class="spacer"></div>`;
 }
@@ -1309,7 +1337,7 @@ function exportPDF(type){
   .footer{font-size:9px;color:#aaa;border-top:1px solid #eee;padding-top:10px;margin-top:14px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px}
   </style></head><body>
   <div class="header"><div><div class="brand">CSCAR</div><div class="tagline">SASU — Gestion &amp; Comptabilité</div></div><div style="text-align:right;font-size:10px;color:#888">Établi le ${today}</div></div>
-  <div class="info-grid"><div><span>Entreprise : </span><strong>${settings.nom}</strong></div><div><span>Gérant : </span><strong>${settings.gerant||'—'}</strong></div><div><span>SIRET : </span><strong>${settings.siret||'—'}</strong></div><div><span>Régime : </span><strong>Micro — ${settings.regime}</strong></div><div><span>Activité : </span><strong>${settings.activite}</strong></div><div><span>Exercice : </span><strong>01/01/${filterYear} — 31/12/${filterYear}</strong></div></div>
+  <div class="info-grid"><div><span>Entreprise : </span><strong>${settings.nom}</strong></div><div><span>Gérant : </span><strong>${settings.gerant||'—'}</strong></div><div><span>SIRET : </span><strong>${settings.siret||'—'}</strong></div><div><span>Régime : </span><strong>SASU</strong></div><div><span>Activité : </span><strong>${settings.activite}</strong></div><div><span>Exercice : </span><strong>01/01/${filterYear} — 31/12/${filterYear}</strong></div></div>
   <div class="period">📊 ${type==='month'?'Relevé mensuel':'Bilan annuel'} — ${period}</div>
   ${actSum?`<div class="act-section"><div class="act-title">Répartition par activité</div>${actSum}</div>`:''}
   <table><thead><tr><th>Date</th><th>N° Facture</th><th>Activité</th><th>Libellé</th><th>Paiement</th><th style="text-align:right">Montant</th><th style="text-align:right">Solde</th></tr></thead>
@@ -1338,6 +1366,7 @@ load();
 // Expose all functions to global scope for onclick handlers
 window.toggleTheme=toggleTheme;
 window.setComptaTab=setComptaTab;
+window.renderSettings=renderSettings;
 window.openEditRec=openEditRec;
 window.openEditAchat=openEditAchat;
 window.closeModal=closeModal;
