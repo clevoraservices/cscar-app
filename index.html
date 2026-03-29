@@ -324,8 +324,8 @@ tfoot td{padding:9px 8px;font-size:0.8rem;font-weight:700;font-family:'Barlow Co
 
 @media(min-width:640px){body{background:#d8dce6;display:flex;justify-content:center;padding-top:20px}.app{max-width:520px;width:520px;border-radius:16px 16px 0 0;box-shadow:0 4px 32px rgba(0,0,0,0.15);min-height:calc(100vh - 20px)}nav{left:50%;transform:translateX(-50%);width:520px!important}}
 
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.25);max-height:88vh;overflow-y:auto}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;width:100%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,0.25);max-height:80vh;overflow-y:auto;margin:auto}
 .modal-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.1rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;color:var(--text)}
 .modal-footer{display:flex;gap:8px;margin-top:16px}
 .btn-save{flex:1;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:11px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer}
@@ -384,6 +384,7 @@ tfoot td{padding:9px 8px;font-size:0.8rem;font-weight:700;font-family:'Barlow Co
 <nav>
   <button onclick="setSection('tpv')" id="nav-tpv"><span class="nav-icon">⚡</span><span class="nav-lbl">Encaisser</span></button>
   <button onclick="setSection('achats')" id="nav-achats"><span class="nav-icon">🛒</span><span class="nav-lbl">Achats</span></button>
+  <button onclick="setSection('annuaire')" id="nav-annuaire"><span class="nav-icon">📒</span><span class="nav-lbl">Annuaire</span></button>
   <button onclick="setSection('compta')" id="nav-compta"><span class="nav-icon">📊</span><span class="nav-lbl">Compta</span></button>
 </nav>
 </div>
@@ -426,6 +427,8 @@ let theme='light';
 // TPV state
 let tpvAmt='', tpvAct='lavage', tpvPay='cb', tpvDesc='', tpvDate=now.toISOString().split('T')[0], tpvFacture='';
 let editId=null, editType=null, editObj={};
+let clients=[], fournisseurs=[];
+let annuaireTab='fournisseurs';
 // Achat form state
 let achatForm={date:now.toISOString().split('T')[0],desc:'',amount:'',cat:'Carburant',fournisseur:'',facture:''};
 
@@ -500,6 +503,11 @@ async function load(){
     achats=ach.map(r=>({id:r.id,date:r.date,desc:r.description,amount:parseFloat(r.montant),cat:r.categorie||'Autre',fournisseur:r.fournisseur||'',facture:r.facture||'',statut:r.statut||'impaye',date_reglement:r.date_reglement||'',mode_reglement:r.mode_reglement||'',nb_echeances:r.nb_echeances||null,date_echeance:r.date_echeance||''}));
   }catch(e){showToast('Erreur connexion Supabase','err');console.error(e);}
   try{const s=localStorage.getItem('cscar_cfg');if(s)settings=Object.assign(settings,JSON.parse(s));}catch(e){}
+  try{const cl=await window.storage?.get?.('cscar_clients');if(cl)clients=JSON.parse(cl.value||'[]');}catch(e){clients=[];}
+  try{const fo=await window.storage?.get?.('cscar_fournisseurs');if(fo)fournisseurs=JSON.parse(fo.value||'[]');}catch(e){fournisseurs=[];}
+  // Charger depuis localStorage aussi
+  try{const cl=localStorage.getItem('cscar_clients');if(cl)clients=JSON.parse(cl);}catch(e){}
+  try{const fo=localStorage.getItem('cscar_fournisseurs');if(fo)fournisseurs=JSON.parse(fo);}catch(e){}
   const th=localStorage.getItem('cscar_theme');
   if(th){theme=th;document.documentElement.setAttribute('data-theme',theme);document.getElementById('theme-btn').textContent=theme==='light'?'🌙':'☀️';}
   updateAlerts();render();
@@ -514,6 +522,9 @@ async function saveRecs(){
 async function saveAchats(){
   // géré directement dans addAchat() via sbInsert
 }
+
+async function saveClients(){try{localStorage.setItem('cscar_clients',JSON.stringify(clients));}catch(e){}}
+async function saveFournisseurs(){try{localStorage.setItem('cscar_fournisseurs',JSON.stringify(fournisseurs));}catch(e){}}
 async function saveCfg(){
   try{localStorage.setItem('cscar_cfg',JSON.stringify(settings));}catch(e){}
 }
@@ -566,6 +577,38 @@ function updateAlerts(){
 function getStatutClass(s){return s==='regle'?'statut-regle':s==='echelonne'?'statut-echelonne':'statut-impaye';}
 function getStatutLabel(s){return s==='regle'?'✅ Réglé':s==='echelonne'?'⏳ Échelonné':'❌ Non réglé';}
 
+
+function changeNbEch(delta){
+  const val=document.getElementById('nb-ech-val');
+  if(!val)return;
+  let nb=parseInt(val.textContent)+delta;
+  if(nb<2)nb=2;if(nb>36)nb=36;
+  val.textContent=nb;
+  editObj.nb_echeances=nb;
+  // Rebuild lines
+  const lines=document.getElementById('ech-lines');
+  if(!lines)return;
+  const existing=editObj.echeances||[];
+  editObj.echeances=Array.from({length:nb},(_,i)=>existing[i]||{date:'',montant:'',cheque:''});
+  lines.innerHTML=editObj.echeances.map((e,i)=>`
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:1px;color:var(--accent);margin-bottom:8px">ÉCHÉANCE ${i+1}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px">
+        <div class="form-group"><label>Date</label><input type="date" id="ech-date-${i}" value="${e.date||''}"></div>
+        <div class="form-group"><label>Montant (€)</label><input type="number" id="ech-amt-${i}" value="${e.montant||''}" step="0.01" placeholder="0.00"></div>
+      </div>
+      <div class="form-group"><label>N° Chèque (facultatif)</label><input type="text" id="ech-cheque-${i}" value="${e.cheque||''}" placeholder="CHQ-XXXXXX"></div>
+    </div>`).join('');
+}
+
+function collectEcheances(){
+  const nb=parseInt(document.getElementById('nb-ech-val')?.textContent||2);
+  return Array.from({length:nb},(_,i)=>({
+    date:document.getElementById('ech-date-'+i)?.value||'',
+    montant:parseFloat(document.getElementById('ech-amt-'+i)?.value)||0,
+    cheque:document.getElementById('ech-cheque-'+i)?.value||''
+  }));
+}
 function closeModal(e){
   if(e&&e.target!==document.getElementById('edit-modal'))return;
   document.getElementById('edit-modal').style.display='none';
@@ -638,18 +681,32 @@ function renderStatutExtra(statut, r){
         <option value="">— Non précisé —</option>
         ${PAYS.map(p=>`<option value="${p.key}"${r.mode_reglement===p.key?' selected':''}>${p.icon} ${p.label}</option>`).join('')}
       </select></div>`;
-  if(statut==='echelonne') return `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-      <div class="form-group"><label>Nb d'échéances</label>
-        <input type="number" id="e-nb-ech" value="${r.nb_echeances||2}" min="2" max="36"></div>
-      <div class="form-group"><label>1ère échéance</label>
-        <input type="date" id="e-date-ech" value="${r.date_echeance||''}"></div>
-    </div>
-    <div class="form-group" style="margin-top:8px"><label>Mode paiement (facultatif)</label>
-      <select id="e-mode-reg">
-        <option value="">— Non précisé —</option>
-        ${PAYS.map(p=>`<option value="${p.key}"${r.mode_reglement===p.key?' selected':''}>${p.icon} ${p.label}</option>`).join('')}
-      </select></div>`;
+  if(statut==='echelonne'){
+    const nbEch=r.nb_echeances||2;
+    const echs=r.echeances||Array.from({length:nbEch},(_,i)=>({date:'',montant:'',cheque:''}));
+    return `
+    <div style="margin-top:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <label style="font-size:0.6rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:700">Nb d'échéances</label>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button onclick="changeNbEch(-1)" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:1rem;color:var(--text)">−</button>
+          <span id="nb-ech-val" style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.1rem;min-width:20px;text-align:center">${nbEch}</span>
+          <button onclick="changeNbEch(1)" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:1rem;color:var(--text)">+</button>
+        </div>
+      </div>
+      <div id="ech-lines">
+        ${echs.map((e,i)=>`
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:1px;color:var(--accent);margin-bottom:8px">ÉCHÉANCE ${i+1}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px">
+            <div class="form-group"><label>Date</label><input type="date" id="ech-date-${i}" value="${e.date||''}"></div>
+            <div class="form-group"><label>Montant (€)</label><input type="number" id="ech-amt-${i}" value="${e.montant||''}" step="0.01" placeholder="0.00"></div>
+          </div>
+          <div class="form-group"><label>N° Chèque (facultatif)</label><input type="text" id="ech-cheque-${i}" value="${e.cheque||''}" placeholder="CHQ-XXXXXX"></div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
   if(statut==='impaye') return `
     <div class="form-group" style="margin-top:8px"><label>Date d'échéance prévue</label>
       <input type="date" id="e-date-ech" value="${r.date_echeance||''}"></div>`;
@@ -676,8 +733,8 @@ function getExtraFields(statut){
     const dr=document.getElementById('e-date-reg');if(dr)out.date_reglement=dr.value;
     const mr=document.getElementById('e-mode-reg');if(mr)out.mode_reglement=mr.value;
   }else if(statut==='echelonne'){
-    const ne=document.getElementById('e-nb-ech');if(ne)out.nb_echeances=parseInt(ne.value)||2;
-    const de=document.getElementById('e-date-ech');if(de)out.date_echeance=de.value;
+    out.echeances=collectEcheances();
+    out.nb_echeances=out.echeances.length;
     const mr=document.getElementById('e-mode-reg');if(mr)out.mode_reglement=mr.value;
   }else if(statut==='impaye'){
     const de=document.getElementById('e-date-ech');if(de)out.date_echeance=de.value;
@@ -727,6 +784,7 @@ function render(){
   const c=document.getElementById('content');if(!c)return;
   if(section==='tpv')renderTPV(c);
   else if(section==='achats')renderAchats(c);
+  else if(section==='annuaire')renderAnnuaire(c);
   else if(section==='compta')renderCompta(c);
   else if(section==='settings')renderSettings(c);
   else if(section==='journal')renderJournal(c);
@@ -797,7 +855,8 @@ function renderTPV(c){
     <div class="tpv-fields tpv-fields-3" style="grid-template-columns:1fr 1fr 1fr">
       <div class="tpv-field" style="grid-column:span 2">
         <label>Description / Client</label>
-        <input type="text" id="f-desc" value="${tpvDesc}" placeholder="Nom client, note..." oninput="tpvDesc=this.value;updDisp()">
+        <input type="text" id="f-desc" value="${tpvDesc}" placeholder="Nom client, note..." list="clients-list" oninput="tpvDesc=this.value;updDisp()">
+        <datalist id="clients-list">${clients.map(c=>`<option value="${c.nom}">`).join('')}</datalist>
       </div>
       <div class="tpv-field">
         <label>Date</label>
@@ -917,6 +976,108 @@ function renderCompta(c){
 }
 
 
+
+/* ═══════════════════════════════════ */
+/* ANNUAIRE                           */
+/* ═══════════════════════════════════ */
+function setAnnuaireTab(t){annuaireTab=t;section='annuaire';render();}
+
+function renderAnnuaire(c){
+  const tabs=[{k:'fournisseurs',icon:'🏭',lbl:'Fournisseurs'},{k:'clients',icon:'👤',lbl:'Clients'}];
+  const subNav=`<div style="display:flex;gap:6px;padding:12px 14px 0;margin-bottom:12px">
+    ${tabs.map(t=>`<button onclick="setAnnuaireTab('${t.k}')" style="flex:1;background:${annuaireTab===t.k?'var(--accent)':'var(--surface)'};color:${annuaireTab===t.k?'#fff':'var(--muted)'};border:1px solid ${annuaireTab===t.k?'var(--accent)':'var(--border)'};border-radius:8px;padding:8px 4px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.72rem;letter-spacing:1px;text-transform:uppercase;cursor:pointer">${t.icon} ${t.lbl}</button>`).join('')}
+  </div>`;
+  c.innerHTML=subNav+'<div id="annuaire-inner"></div>';
+  const inner=document.getElementById('annuaire-inner');
+  if(annuaireTab==='fournisseurs')renderFournisseurs(inner);
+  else renderClients(inner);
+}
+
+function renderFournisseurs(c){
+  c.innerHTML=`
+  <div class="section-header" style="padding-bottom:10px">
+    <div class="section-title">🏭 <span style="color:var(--accent)">Fournisseurs</span></div>
+    <div class="section-sub">${fournisseurs.length} fournisseur${fournisseurs.length>1?'s':''} enregistré${fournisseurs.length>1?'s':''}</div>
+  </div>
+  <div class="form-box" style="margin:0 14px 14px">
+    <div class="form-box-title" style="color:var(--red)">➕ Nouveau fournisseur</div>
+    <div class="form-grid">
+      <div class="form-group" style="grid-column:span 2"><label>Nom fournisseur *</label><input type="text" id="f-nom" placeholder="Nom de la société"></div>
+      <div class="form-group"><label>Téléphone</label><input type="tel" id="f-tel" placeholder="0690..."></div>
+      <div class="form-group"><label>Email</label><input type="email" id="f-email" placeholder="contact@..."></div>
+      <div class="form-group" style="grid-column:span 2"><label>Adresse</label><input type="text" id="f-adresse" placeholder="Rue, ville..."></div>
+      <div class="form-group" style="grid-column:span 2"><label>IBAN</label><input type="text" id="f-iban" placeholder="FR76 XXXX XXXX..."></div>
+    </div>
+    <button class="btn-danger" onclick="addFournisseur()">💾 Enregistrer</button>
+  </div>
+  <div style="padding:0 14px">
+    ${fournisseurs.length===0?`<div class="journal-empty">Aucun fournisseur enregistré</div>`
+    :fournisseurs.map(f=>`
+    <div class="journal-item" style="flex-direction:column;align-items:flex-start;gap:6px">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.95rem;letter-spacing:1px">${f.nom}</span>
+        <button class="del-btn" onclick="delFournisseur(${f.id})">✕</button>
+      </div>
+      ${f.tel?`<div style="font-size:0.75rem;color:var(--muted)">📞 ${f.tel}</div>`:''}
+      ${f.email?`<div style="font-size:0.75rem;color:var(--muted)">✉️ ${f.email}</div>`:''}
+      ${f.adresse?`<div style="font-size:0.75rem;color:var(--muted)">📍 ${f.adresse}</div>`:''}
+      ${f.iban?`<div style="font-size:0.73rem;color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:1px">🏦 ${f.iban}</div>`:''}
+    </div>`).join('')}
+  </div>
+  <div class="spacer"></div>`;
+}
+
+function renderClients(c){
+  c.innerHTML=`
+  <div class="section-header" style="padding-bottom:10px">
+    <div class="section-title">👤 <span style="color:var(--accent)">Clients</span></div>
+    <div class="section-sub">${clients.length} client${clients.length>1?'s':''} enregistré${clients.length>1?'s':''}</div>
+  </div>
+  <div class="form-box" style="margin:0 14px 14px">
+    <div class="form-box-title" style="color:var(--accent)">➕ Nouveau client</div>
+    <div class="form-grid">
+      <div class="form-group" style="grid-column:span 2"><label>Nom client *</label><input type="text" id="c-nom" placeholder="Nom ou société"></div>
+      <div class="form-group"><label>Téléphone</label><input type="tel" id="c-tel" placeholder="0690..."></div>
+      <div class="form-group"><label>Email</label><input type="email" id="c-email" placeholder="client@..."></div>
+      <div class="form-group" style="grid-column:span 2"><label>Adresse</label><input type="text" id="c-adresse" placeholder="Rue, ville..."></div>
+    </div>
+    <button class="btn-primary" onclick="addClient()">💾 Enregistrer</button>
+  </div>
+  <div style="padding:0 14px">
+    ${clients.length===0?`<div class="journal-empty">Aucun client enregistré</div>`
+    :clients.map(cl=>`
+    <div class="journal-item" style="flex-direction:column;align-items:flex-start;gap:6px">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.95rem;letter-spacing:1px">${cl.nom}</span>
+        <button class="del-btn" onclick="delClient(${cl.id})">✕</button>
+      </div>
+      ${cl.tel?`<div style="font-size:0.75rem;color:var(--muted)">📞 ${cl.tel}</div>`:''}
+      ${cl.email?`<div style="font-size:0.75rem;color:var(--muted)">✉️ ${cl.email}</div>`:''}
+      ${cl.adresse?`<div style="font-size:0.75rem;color:var(--muted)">📍 ${cl.adresse}</div>`:''}
+    </div>`).join('')}
+  </div>
+  <div class="spacer"></div>`;
+}
+
+function addFournisseur(){
+  const nom=document.getElementById('f-nom')?.value?.trim();
+  if(!nom){showToast('Nom obligatoire','err');return;}
+  if(fournisseurs.find(f=>f.nom.toLowerCase()===nom.toLowerCase())){showToast('Fournisseur déjà existant','err');return;}
+  fournisseurs.push({id:Date.now(),nom,tel:document.getElementById('f-tel')?.value||'',email:document.getElementById('f-email')?.value||'',adresse:document.getElementById('f-adresse')?.value||'',iban:document.getElementById('f-iban')?.value||''});
+  saveFournisseurs();showToast('Fournisseur ajouté ✓');render();
+}
+
+function addClient(){
+  const nom=document.getElementById('c-nom')?.value?.trim();
+  if(!nom){showToast('Nom obligatoire','err');return;}
+  if(clients.find(c=>c.nom.toLowerCase()===nom.toLowerCase())){showToast('Client déjà existant','err');return;}
+  clients.push({id:Date.now(),nom,tel:document.getElementById('c-tel')?.value||'',email:document.getElementById('c-email')?.value||'',adresse:document.getElementById('c-adresse')?.value||''});
+  saveClients();showToast('Client ajouté ✓');render();
+}
+
+function delFournisseur(id){if(!confirm('Supprimer ce fournisseur ?'))return;fournisseurs=fournisseurs.filter(f=>f.id!==id);saveFournisseurs();showToast('Supprimé');render();}
+function delClient(id){if(!confirm('Supprimer ce client ?'))return;clients=clients.filter(c=>c.id!==id);saveClients();showToast('Supprimé');render();}
+
 /* ═══════════════════════════════════ */
 /* PARAMÈTRES                         */
 /* ═══════════════════════════════════ */
@@ -929,16 +1090,8 @@ function renderSettings(c){
   <div class="form-box" style="margin:0 14px 14px">
     <div class="form-box-title" style="color:var(--accent)">Entreprise</div>
     <div class="form-grid">
-      ${[['nom','Nom entreprise','CSCAR'],['gerant','Gérant','Prénom NOM'],['siret','SIRET','12345678900000'],['codeape','Code APE','4520A'],['activite','Activité','Lavage / Location / Vente'],['adresse','Adresse','1 rue exemple']].map(([k,l,p])=>`
+      ${[['nom','Nom de la SASU','CSCAR'],['gerant','Président','Prénom NOM'],['siret','SIRET','12345678900000'],['codeape','Code APE','4520A'],['activite','Activité','Lavage / Location / Vente auto'],['adresse','Adresse du siège','1 rue exemple']].map(([k,l,p])=>`
       <div class="form-group"><label>${l}</label><input type="text" id="s-${k}" value="${settings[k]||''}" placeholder="${p}"></div>`).join('')}
-      <div class="form-group"><label>URSSAF</label><select id="s-peri">
-        <option value="trimestriel"${settings.periodicite==='trimestriel'?' selected':''}>Trimestrielle</option>
-        <option value="mensuel"${settings.periodicite==='mensuel'?' selected':''}>Mensuelle</option>
-      </select></div>
-      <div class="form-group"><label>Régime</label><select id="s-reg">
-        <option value="BIC"${settings.regime==='BIC'?' selected':''}>BIC</option>
-        <option value="BNC"${settings.regime==='BNC'?' selected':''}>BNC</option>
-      </select></div>
     </div>
     <button class="btn-primary" onclick="saveSet()">💾 Sauvegarder</button>
   </div>
@@ -1030,7 +1183,9 @@ function renderAchats(c){
       <div class="form-group"><label>Catégorie</label><select id="a-cat" onchange="achatForm.cat=this.value">
         ${CAT_ACHATS.map(cat=>`<option${achatForm.cat===cat?' selected':''}>${cat}</option>`).join('')}
       </select></div>
-      <div class="form-group" style="grid-column:span 2"><label>Description / Fournisseur</label><input type="text" id="a-desc" value="${achatForm.desc}" placeholder="Fournisseur, libellé..." oninput="achatForm.desc=this.value"></div>
+      <div class="form-group" style="grid-column:span 2"><label>Description / Fournisseur</label>
+        <input type="text" id="a-desc" value="${achatForm.desc}" placeholder="Fournisseur, libellé..." list="fournisseurs-list" oninput="achatForm.desc=this.value">
+        <datalist id="fournisseurs-list">${fournisseurs.map(f=>`<option value="${f.nom}">`).join('')}</datalist></div>
       <div class="form-group" style="grid-column:span 2"><label style="font-size:0.7rem">Montant (€)</label><input type="number" id="a-amt" value="${achatForm.amount}" placeholder="0,00" step="0.01" style="font-size:1.4rem;font-weight:800;padding:12px 14px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px" oninput="achatForm.amount=this.value"></div>
       <div class="form-group"><label>N° Facture fournisseur</label><input type="text" id="a-fac" value="${achatForm.facture}" placeholder="FOURN-2026-001" oninput="achatForm.facture=this.value"></div>
     </div>
@@ -1273,8 +1428,6 @@ async function addAchat(){
 
 function saveSet(){
   ['nom','gerant','siret','codeape','activite','adresse'].forEach(k=>{const el=document.getElementById('s-'+k);if(el)settings[k]=el.value;});
-  const p=document.getElementById('s-peri');if(p)settings.periodicite=p.value;
-  const r=document.getElementById('s-reg');if(r)settings.regime=r.value;
   saveCfg();updateAlerts();showToast('Paramètres sauvegardés ✓');render();
 }
 
@@ -1367,6 +1520,12 @@ load();
 window.toggleTheme=toggleTheme;
 window.setComptaTab=setComptaTab;
 window.renderSettings=renderSettings;
+window.setAnnuaireTab=setAnnuaireTab;
+window.addFournisseur=addFournisseur;
+window.addClient=addClient;
+window.delFournisseur=delFournisseur;
+window.delClient=delClient;
+window.changeNbEch=changeNbEch;
 window.openEditRec=openEditRec;
 window.openEditAchat=openEditAchat;
 window.closeModal=closeModal;
