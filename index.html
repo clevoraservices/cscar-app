@@ -319,7 +319,51 @@ nav{left:50%;transform:translateX(-50%);width:520px}
 </div>
 
 <script>
-'use strict';
+
+// === DEBUG MOBILE ===
+const _errors = [];
+window.onerror = function(msg, src, line, col, err) {
+  _errors.push('JS: ' + msg + ' (ligne ' + line + ')');
+  showDebug();
+  return false;
+};
+window.addEventListener('unhandledrejection', function(e) {
+  _errors.push('Promise: ' + (e.reason?.message || String(e.reason)));
+  showDebug();
+});
+function showDebug() {
+  let box = document.getElementById('debug-box');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'debug-box';
+    box.style.cssText = 'position:fixed;top:60px;left:10px;right:10px;background:#1a1a1a;color:#ff4444;font-family:monospace;font-size:11px;padding:12px;border-radius:8px;z-index:9999;max-height:300px;overflow-y:auto;border:2px solid #ff4444';
+    box.innerHTML = '<div style="color:#fff;font-weight:bold;margin-bottom:8px">🐛 ERREURS DÉTECTÉES <button onclick="this.parentElement.parentElement.remove()" style="float:right;background:none;border:none;color:#fff;cursor:pointer">✕</button></div>';
+    document.body.appendChild(box);
+  }
+  box.innerHTML = '<div style="color:#fff;font-weight:bold;margin-bottom:8px">🐛 ERREURS <button onclick="this.parentElement.remove()" style="float:right;background:none;border:none;color:#fff;cursor:pointer">✕</button></div>' + _errors.map(e => '<div style="margin-bottom:6px;padding:4px;background:#2a0000;border-radius:4px">⚠️ ' + e + '</div>').join('');
+}
+// Test Supabase au démarrage
+setTimeout(async function() {
+  try {
+    const r = await fetch('https://hlbegjuphqlaafgxyagt.supabase.co/rest/v1/recettes?select=count&limit=1', {
+      headers: {
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhsYmVnanVwaHFsYWFmZ3h5YWd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjU3MjgsImV4cCI6MjA5MDE0MTcyOH0.Kl485dZsgrIEZIi5C8VDPX5oRFIAJ51-xTbU_DIA5Hg',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhsYmVnanVwaHFsYWFmZ3h5YWd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjU3MjgsImV4cCI6MjA5MDE0MTcyOH0.Kl485dZsgrIEZIi5C8VDPX5oRFIAJ51-xTbU_DIA5Hg'
+      }
+    });
+    if (r.ok) {
+      _errors.push('✅ Supabase OK - status ' + r.status);
+    } else {
+      const txt = await r.text();
+      _errors.push('❌ Supabase erreur ' + r.status + ': ' + txt.substring(0, 100));
+    }
+  } catch(e) {
+    _errors.push('❌ Supabase fetch failed: ' + e.message);
+  }
+  showDebug();
+}, 1000);
+// === FIN DEBUG ===
+
 /* ════════════════════════════════════
    CONFIG SUPABASE
 ════════════════════════════════════ */
@@ -328,22 +372,26 @@ const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 const SH={'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY};
 
 async function sbGet(table){
-  const r=await fetch(`${SUPA_URL}/rest/v1/${table}?select=*&order=date.asc`,{headers:SH});
+  const url=`${SUPA_URL}/rest/v1/${table}?select=*&order=date.asc&apikey=${SUPA_KEY}`;
+  const r=await fetch(url,{headers:SH,mode:'cors'});
   if(!r.ok)throw new Error(await r.text());
   return r.json();
 }
 async function sbInsert(table,row){
-  const r=await fetch(`${SUPA_URL}/rest/v1/${table}`,{method:'POST',headers:{...SH,'Prefer':'return=representation'},body:JSON.stringify(row)});
+  const url=`${SUPA_URL}/rest/v1/${table}?apikey=${SUPA_KEY}`;
+  const r=await fetch(url,{method:'POST',headers:{...SH,'Prefer':'return=representation'},body:JSON.stringify(row),mode:'cors'});
   if(!r.ok)throw new Error(await r.text());
   return r.json();
 }
 async function sbUpdate(table,id,row){
-  const r=await fetch(`${SUPA_URL}/rest/v1/${table}?id=eq.${id}`,{method:'PATCH',headers:{...SH,'Prefer':'return=representation'},body:JSON.stringify(row)});
+  const url=`${SUPA_URL}/rest/v1/${table}?id=eq.${id}&apikey=${SUPA_KEY}`;
+  const r=await fetch(url,{method:'PATCH',headers:{...SH,'Prefer':'return=representation'},body:JSON.stringify(row),mode:'cors'});
   if(!r.ok)throw new Error(await r.text());
   return r.json();
 }
 async function sbDelete(table,id){
-  const r=await fetch(`${SUPA_URL}/rest/v1/${table}?id=eq.${id}`,{method:'DELETE',headers:SH});
+  const url=`${SUPA_URL}/rest/v1/${table}?id=eq.${id}&apikey=${SUPA_KEY}`;
+  const r=await fetch(url,{method:'DELETE',headers:SH,mode:'cors'});
   if(!r.ok)throw new Error(await r.text());
 }
 
