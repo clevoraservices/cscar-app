@@ -265,11 +265,25 @@ body{background:#d8dce6;display:flex;justify-content:center;min-height:100vh}
 .app{max-width:520px;width:520px;box-shadow:0 0 40px rgba(0,0,0,.15)}
 nav{left:50%;transform:translateX(-50%);width:520px}
 }
+
+#dbg{position:fixed;top:0;left:0;right:0;background:#000;color:#0f0;font-family:monospace;font-size:11px;padding:8px;z-index:99999;max-height:50vh;overflow-y:auto;border-bottom:2px solid #f00;display:none}
+#dbg.show{display:block}
+#dbg .derr{color:#f55;margin-bottom:4px;padding:3px;background:#200;border-radius:3px}
+#dbg .dok{color:#0f0;margin-bottom:4px}
+#dbg .dinfo{color:#ff0;margin-bottom:4px}
 </style>
 
 </head>
 <body>
 <div class="app">
+<div id="dbg">
+  <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+    <strong style="color:#ff0">🐛 DEBUG CSCAR</strong>
+    <button onclick="document.getElementById('dbg').classList.remove('show')" style="background:#333;border:none;color:#fff;padding:2px 8px;cursor:pointer;border-radius:4px">✕</button>
+  </div>
+  <div id="dbg-log"></div>
+</div>
+
   <div class="toast" id="toast" style="opacity:0"></div>
 
   <!-- MODAL EDITION -->
@@ -320,49 +334,44 @@ nav{left:50%;transform:translateX(-50%);width:520px}
 
 <script>
 
-// === DEBUG MOBILE ===
-const _errors = [];
-window.onerror = function(msg, src, line, col, err) {
-  _errors.push('JS: ' + msg + ' (ligne ' + line + ')');
-  showDebug();
+// ═══ SYSTÈME DEBUG ═══
+const dbg = {
+  log: function(msg, type='info') {
+    const el = document.getElementById('dbg');
+    const log = document.getElementById('dbg-log');
+    if (!el || !log) return;
+    el.classList.add('show');
+    const div = document.createElement('div');
+    div.className = type === 'err' ? 'derr' : type === 'ok' ? 'dok' : 'dinfo';
+    div.textContent = new Date().toLocaleTimeString() + ' | ' + msg;
+    log.appendChild(div);
+    el.scrollTop = el.scrollHeight;
+  }
+};
+
+window.onerror = function(msg, src, line) {
+  dbg.log('❌ ' + msg + ' (L' + line + ')', 'err');
   return false;
 };
 window.addEventListener('unhandledrejection', function(e) {
-  _errors.push('Promise: ' + (e.reason?.message || String(e.reason)));
-  showDebug();
+  dbg.log('❌ Promise: ' + (e.reason?.message || String(e.reason)), 'err');
 });
-function showDebug() {
-  let box = document.getElementById('debug-box');
-  if (!box) {
-    box = document.createElement('div');
-    box.id = 'debug-box';
-    box.style.cssText = 'position:fixed;top:60px;left:10px;right:10px;background:#1a1a1a;color:#ff4444;font-family:monospace;font-size:11px;padding:12px;border-radius:8px;z-index:9999;max-height:300px;overflow-y:auto;border:2px solid #ff4444';
-    box.innerHTML = '<div style="color:#fff;font-weight:bold;margin-bottom:8px">🐛 ERREURS DÉTECTÉES <button onclick="this.parentElement.parentElement.remove()" style="float:right;background:none;border:none;color:#fff;cursor:pointer">✕</button></div>';
-    document.body.appendChild(box);
-  }
-  box.innerHTML = '<div style="color:#fff;font-weight:bold;margin-bottom:8px">🐛 ERREURS <button onclick="this.parentElement.remove()" style="float:right;background:none;border:none;color:#fff;cursor:pointer">✕</button></div>' + _errors.map(e => '<div style="margin-bottom:6px;padding:4px;background:#2a0000;border-radius:4px">⚠️ ' + e + '</div>').join('');
-}
-// Test Supabase au démarrage
-setTimeout(async function() {
-  try {
-    const r = await fetch('https://hlbegjuphqlaafgxyagt.supabase.co/rest/v1/recettes?select=count&limit=1', {
-      headers: {
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhsYmVnanVwaHFsYWFmZ3h5YWd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjU3MjgsImV4cCI6MjA5MDE0MTcyOH0.Kl485dZsgrIEZIi5C8VDPX5oRFIAJ51-xTbU_DIA5Hg',
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhsYmVnanVwaHFsYWFmZ3h5YWd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjU3MjgsImV4cCI6MjA5MDE0MTcyOH0.Kl485dZsgrIEZIi5C8VDPX5oRFIAJ51-xTbU_DIA5Hg'
-      }
-    });
-    if (r.ok) {
-      _errors.push('✅ Supabase OK - status ' + r.status);
-    } else {
-      const txt = await r.text();
-      _errors.push('❌ Supabase erreur ' + r.status + ': ' + txt.substring(0, 100));
+
+// Afficher le debug en tapant 5 fois sur le header
+let tapCount = 0;
+document.addEventListener('DOMContentLoaded', function() {
+  const hdr = document.querySelector('header');
+  if (hdr) hdr.addEventListener('click', function() {
+    tapCount++;
+    if (tapCount >= 5) {
+      document.getElementById('dbg').classList.add('show');
+      tapCount = 0;
     }
-  } catch(e) {
-    _errors.push('❌ Supabase fetch failed: ' + e.message);
-  }
-  showDebug();
-}, 1000);
-// === FIN DEBUG ===
+  });
+});
+// ═══ FIN DEBUG ═══
+
+
 
 /* ════════════════════════════════════
    CONFIG SUPABASE
@@ -472,12 +481,15 @@ function showToast(msg,type='ok'){
    LOAD / SAVE
 ════════════════════════════════════ */
 async function load(){
+  dbg.log('🚀 load() démarré', 'info');
   // Afficher l'app immédiatement
-  updateAlerts();
-  render();
+  try { updateAlerts(); dbg.log('✅ updateAlerts OK', 'ok'); } catch(e) { dbg.log('❌ updateAlerts: ' + e.message, 'err'); }
+  try { render(); dbg.log('✅ render() OK', 'ok'); } catch(e) { dbg.log('❌ render: ' + e.message, 'err'); }
   // Puis charger Supabase en arrière-plan
   try{
+    dbg.log('📡 Tentative Supabase fetch...', 'info');
     const[recs,ach]=await Promise.all([sbGet('recettes'),sbGet('achats')]);
+    dbg.log('✅ Supabase OK - ' + recs.length + ' recettes, ' + ach.length + ' achats', 'ok');
     recettes=recs.map(r=>({
       id:r.id, date:r.date, desc:r.description||'', amount:parseFloat(r.montant)||0,
       activite:r.activite||'lavage', paiement:r.paiement||'cb', facture:r.facture||'',
@@ -495,6 +507,7 @@ async function load(){
     showToast('Données chargées ✓');
     render();
   }catch(e){
+    dbg.log('❌ Supabase ERREUR: ' + e.message, 'err');
     showToast('⚠️ Hors ligne — données non chargées','err');
     console.error(e);
   }
