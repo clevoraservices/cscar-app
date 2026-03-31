@@ -2,7 +2,7 @@
 <html lang="fr" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>CSCAR - Gestion SASU</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -182,9 +182,15 @@ tfoot td{padding:9px 8px;font-size:.8rem;font-weight:700;font-family:"Barlow Con
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
 @media screen and (min-width:768px){
   body{background:#d8dce6;display:flex;justify-content:center;min-height:100vh}
-  .app{max-width:520px;width:520px;box-shadow:0 0 40px rgba(0,0,0,.15)}
+  .app{max-width:520px;width:520px;min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.15)}
   nav{left:50%;transform:translateX(-50%);width:520px}
 }
+
+.bgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px;margin-bottom:14px}
+.bbtn{border-radius:10px;padding:16px 10px;font-weight:800;font-size:.78rem;cursor:pointer;text-align:center;border:1px solid;font-family:"Barlow Condensed",sans-serif;letter-spacing:2px;text-transform:uppercase}
+.bbtn:hover{opacity:.85}
+.abars{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:14px;margin:0 14px 14px}
+.abtit{font-family:"Barlow Condensed",sans-serif;font-size:.68rem;text-transform:uppercase;letter-spacing:2px;color:var(--mu);font-weight:800;margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -365,7 +371,7 @@ function render(){
   if(section==='tpv')renderTPV(c);
   else if(section==='achats')renderAchats(c);
   else if(section==='annuaire')renderAnnuaire(c);
-  else if(section==='compta'||section==='journal'||section==='annuel'||section==='bilan'||section==='alertes'||section==='impaye')renderCompta(c);
+  else if(section==='compta'||section==='journal'||section==='annuel'||section==='alertes'||section==='impaye')renderCompta(c);
   else if(section==='settings')renderSettings(c);
   else renderTPV(c);
 }
@@ -478,13 +484,12 @@ function delFourn(id){if(!confirm('Supprimer ?'))return;fournisseurs=fournisseur
 function delClie(id){if(!confirm('Supprimer ?'))return;clients=clients.filter(function(c){return c.id!==id;});saveClients();showToast('Supprime');render();}
 
 function renderCompta(c){
-  var tabs=[{k:'journal',lbl:'Journal'},{k:'annuel',lbl:'Annuel'},{k:'bilan',lbl:'Bilan'},{k:'impaye',lbl:'Impayes'},{k:'alertes',lbl:'Alertes SASU'}];
+  var tabs=[{k:'journal',lbl:'Journal'},{k:'annuel',lbl:'Annuel'},{k:'impaye',lbl:'Impayes'},{k:'alertes',lbl:'Alertes SASU'}];
   var ts=tabs.map(function(t){return '<button class="stab'+(section===t.k?' active':'')+'" onclick="setSection(\''+t.k+'\')">'+t.lbl+'</button>';}).join('');
   c.innerHTML='<div class="stabs">'+ts+'</div><div id="ci"></div>';
   var ci=document.getElementById('ci');
   if(section==='journal')renderJournal(ci);
   else if(section==='annuel')renderAnnuel(ci);
-  else if(section==='bilan')renderBilan(ci);
   else if(section==='impaye')renderImpaye(ci);
   else if(section==='alertes')renderAlertes(ci);
   else renderJournal(ci);
@@ -497,18 +502,13 @@ function renderJournal(c){
 }
 
 function renderAnnuel(c){
-  var yrs=getYears(),yr=getYR(filterYear),yt=sum(yr),ya=sum(getYA(filterYear));
-  var mc=MOIS.map(function(m,i){var mt=sum(getMR(filterYear,i)),isNow=filterYear===CY&&i===CM;return '<div class="mc'+(isNow?' now':'')+'" onclick="filterMonth='+i+';setSection(\'journal\')"><div class="mn">'+MOISC[i]+'</div><div class="mv" style="color:'+(mt>0?'var(--gn)':'var(--mu2)')+'>'+(mt>0?mt.toFixed(0)+'':'---')+'</div></div>';}).join('');
-  var tr=MOIS.map(function(m,i){var mt=sum(getMR(filterYear,i)),ac=sum(getMA(filterYear,i));return '<tr onclick="filterMonth='+i+';setSection(\'journal\')" style="cursor:pointer"><td style="font-family:Barlow Condensed,sans-serif;font-weight:700">'+m+'</td><td class="r" style="color:'+(mt>0?'var(--gn)':'var(--mu2)')+';font-family:Barlow Condensed,sans-serif;font-weight:700">'+(mt>0?mt.toFixed(2)+' EUR':'---')+'</td><td class="r" style="color:'+(ac>0?'var(--rd)':'var(--mu2)')+';font-family:Barlow Condensed,sans-serif">'+(ac>0?'-'+ac.toFixed(2)+' EUR':'---')+'</td><td class="r" style="font-family:Barlow Condensed,sans-serif;color:var(--ac)">'+(mt>0?(mt-ac).toFixed(2)+' EUR':'---')+'</td></tr>';}).join('');
-  c.innerHTML='<div class="shd"><div class="st">Annuel <span class="ac-c">'+filterYear+'</span></div><div class="ss">Vue d ensemble SASU</div></div><div class="flts"><select onchange="filterYear=parseInt(this.value);render()">'+yopts(yrs)+'</select></div><div class="tip">SASU CSCAR - Resultat = CA - Charges. L IS est calcule par ton comptable sur le benefice annuel.</div><div class="cards c2" style="margin-bottom:10px"><div class="card"><div class="cl">CA '+filterYear+'</div><div class="cv" style="color:var(--gn)">'+yt.toFixed(2)+' EUR</div></div><div class="card"><div class="cl">Achats '+filterYear+'</div><div class="cv" style="color:var(--rd)">-'+ya.toFixed(2)+' EUR</div></div><div class="card" style="border-color:var(--abo)"><div class="cl">Resultat brut</div><div class="cv" style="color:var(--ac)">'+(yt-ya).toFixed(2)+' EUR</div></div></div><div class="mgrid">'+mc+'</div><div class="brow"><button class="bc" onclick="exportCSV(\'year\')">CSV annuel</button><button class="bpdf" onclick="exportPDF(\'year\')">PDF annuel</button></div><div class="twrap"><div style="overflow-x:auto"><table><thead><tr><th>Mois</th><th class="r">CA</th><th class="r">Achats</th><th class="r">Resultat</th></tr></thead><tbody>'+tr+'</tbody><tfoot><tr><td>TOTAL '+filterYear+'</td><td class="r" style="color:var(--gn)">'+yt.toFixed(2)+' EUR</td><td class="r" style="color:var(--rd)">-'+ya.toFixed(2)+' EUR</td><td class="r" style="color:var(--ac)">'+(yt-ya).toFixed(2)+' EUR</td></tr></tfoot></table></div></div>';
-}
-
-function renderBilan(c){
   var yrs=getYears(),yr=getYR(filterYear),yt=sum(yr),ya=sum(getYA(filterYear)),res=yt-ya;
-  var al=ACTS.map(function(a){var v=sumAct(yr,a.key);if(!v)return'';return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--bd)"><div style="display:flex;align-items:center;gap:7px"><span>'+a.ico+'</span><span style="font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:.85rem;color:'+a.col+';text-transform:uppercase">'+a.lbl+'</span><span class="ccode">'+a.cpt+'</span></div><span style="font-family:Barlow Condensed,sans-serif;font-weight:800;color:'+a.col+'">'+v.toFixed(2)+' EUR</span></div>';}).join('');
-  var abc={};getYA(filterYear).forEach(function(a){var k=a.cat||'Autre';abc[k]=(abc[k]||0)+a.amount;});
-  var acl=Object.entries(abc).map(function(e){return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:.8rem"><span style="color:var(--tx2)">'+e[0]+'</span><span style="font-family:Barlow Condensed,sans-serif;font-weight:700;color:var(--rd)">-'+e[1].toFixed(2)+' EUR</span></div>';}).join('');
-  c.innerHTML='<div class="shd"><div class="st">Bilan <span class="ac-c">& Export</span></div><div class="ss">Resultat SASU + exports</div></div><div class="flts"><select onchange="filterYear=parseInt(this.value);render()">'+yopts(yrs)+'</select></div><div class="bgrid"><button class="bbtn" style="background:var(--gb);color:var(--gn);border-color:var(--gbo)" onclick="exportCSV(\'year\')">CSV annuel<br><span style="font-size:.6rem;opacity:.7">Comptable</span></button><button class="bbtn" style="background:var(--yb);color:var(--gd);border-color:var(--ybo)" onclick="exportPDF(\'year\')">PDF annuel<br><span style="font-size:.6rem;opacity:.7">Officiel</span></button></div><div class="rbox"><div style="font-family:Barlow Condensed,sans-serif;font-weight:800;font-size:.82rem;text-transform:uppercase;letter-spacing:2px;color:var(--ac);margin-bottom:12px">Resultat SASU '+filterYear+'</div><div class="rrow"><span class="rl">CA Total</span><span class="rv" style="color:var(--gn)">+ '+yt.toFixed(2)+' EUR</span></div><div class="rrow"><span class="rl">Charges / Achats</span><span class="rv" style="color:var(--rd)">- '+ya.toFixed(2)+' EUR</span></div><div class="rrow"><span style="font-family:Barlow Condensed,sans-serif;font-weight:800;font-size:.95rem;text-transform:uppercase">Resultat brut avant IS</span><span style="font-family:Barlow Condensed,sans-serif;font-weight:900;font-size:1.3rem;color:'+(res>=0?'var(--ac)':'var(--rd)')+'">'+(res>=0?'+':'')+res.toFixed(2)+' EUR</span></div></div>'+(al?'<div class="fb"><div class="ft" style="color:var(--gn)">Recettes par activite</div>'+al+'</div>':'')+(acl?'<div class="fb"><div class="ft" style="color:var(--rd)">Achats par categorie</div>'+acl+'</div>':'')+'<div class="fb"><div class="ft" style="color:var(--ac)">Infos entreprise</div><div style="font-size:.8rem;color:var(--tx2);display:grid;grid-template-columns:1fr 1fr;gap:5px 10px"><span style="color:var(--mu)">Entreprise</span><strong>'+settings.nom+'</strong><span style="color:var(--mu)">President</span><strong>'+(settings.gerant||'---')+'</strong><span style="color:var(--mu)">SIRET</span><strong>'+(settings.siret||'---')+'</strong><span style="color:var(--mu)">Forme</span><strong>SASU</strong><span style="color:var(--mu)">Exercice</span><strong>01/01/'+filterYear+' - 31/12/'+filterYear+'</strong></div></div><div class="sp"></div>';
+  var mc=MOIS.map(function(m,i){var mt=sum(getMR(filterYear,i)),isNow=filterYear===CY&&i===CM;return '<div class="mc'+(isNow?' now':'')+'" onclick="filterMonth='+i+';setSection(\'journal\')"><div class="mn">'+MOISC[i]+'</div><div class="mv" style="color:'+(mt>0?'var(--gn)':'var(--mu2)') +'">'+(mt>0?mt.toFixed(0):'---')+'</div></div>';}).join('');
+  var tr=MOIS.map(function(m,i){var mt=sum(getMR(filterYear,i)),ac=sum(getMA(filterYear,i));return '<tr onclick="filterMonth='+i+';setSection(\'journal\')" style="cursor:pointer"><td style="font-family:Barlow Condensed,sans-serif;font-weight:700">'+m+'</td><td class="r" style="color:'+(mt>0?'var(--gn)':'var(--mu2)')+';font-family:Barlow Condensed,sans-serif;font-weight:700">'+(mt>0?mt.toFixed(2)+' EUR':'---')+'</td><td class="r" style="color:'+(ac>0?'var(--rd)':'var(--mu2)')+'">'+(ac>0?'-'+ac.toFixed(2)+' EUR':'---')+'</td><td class="r" style="font-family:Barlow Condensed,sans-serif;color:var(--ac)">'+(mt>0?(mt-ac).toFixed(2)+' EUR':'---')+'</td></tr>';}).join('');
+  var al=ACTS.map(function(a){var v=sumAct(yr,a.key);if(!v)return'';var pct=yt>0?Math.round(v/yt*100):0;return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:.65rem;text-transform:uppercase;letter-spacing:1px;width:68px;flex-shrink:0;color:'+a.col+'">'+a.lbl+'</span><div style="flex:1;background:var(--bd);border-radius:20px;height:7px;overflow:hidden"><div style="height:100%;border-radius:20px;background:'+a.col+';width:'+pct+'%"></div></div><span style="font-size:.65rem;font-family:Barlow Condensed,sans-serif;font-weight:700;width:70px;text-align:right;flex-shrink:0;color:'+a.col+'">'+v.toFixed(0)+' EUR</span></div>';}).join('');
+  var acl_obj={};getYA(filterYear).forEach(function(a){var k=a.cat||'Autre';acl_obj[k]=(acl_obj[k]||0)+a.amount;});
+  var acl=Object.entries(acl_obj).map(function(e){return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:.8rem"><span style="color:var(--tx2)">'+e[0]+'</span><span style="font-family:Barlow Condensed,sans-serif;font-weight:700;color:var(--rd)">-'+e[1].toFixed(2)+' EUR</span></div>';}).join('');
+  c.innerHTML='<div class="shd"><div class="st">Annuel <span class="ac-c">'+filterYear+'</span></div><div class="ss">Bilan et vue mensuelle SASU</div></div><div class="flts"><select onchange="filterYear=parseInt(this.value);render()">'+yopts(yrs)+'</select></div><div class="cards c2" style="margin-bottom:12px"><div class="card"><div class="cl">CA '+filterYear+'</div><div class="cv" style="color:var(--gn)">'+yt.toFixed(2)+' EUR</div></div><div class="card"><div class="cl">Achats '+filterYear+'</div><div class="cv" style="color:var(--rd)">-'+ya.toFixed(2)+' EUR</div></div><div class="card" style="border-color:var(--abo);grid-column:span 2"><div class="cl">Resultat brut avant IS</div><div class="cv" style="color:'+(res>=0?'var(--ac)':'var(--rd)')+'">'+(res>=0?'+':'')+res.toFixed(2)+' EUR</div></div></div>'+(al?'<div class="fb"><div class="ft" style="color:var(--ac)">Repartition CA par activite</div>'+al+'</div>':'')+'<div class="bgrid"><button class="bbtn" style="background:var(--gb);color:var(--gn);border-color:var(--gbo)" onclick="exportCSV(\'year\')">CSV<br><span style="font-size:.6rem;opacity:.7">Pour comptable</span></button><button class="bbtn" style="background:var(--yb);color:var(--gd);border-color:var(--ybo)" onclick="exportPDF(\'year\')">PDF<br><span style="font-size:.6rem;opacity:.7">Document officiel</span></button></div>'+(acl?'<div class="fb"><div class="ft" style="color:var(--rd)">Achats par categorie</div>'+acl+'</div>':'')+'<div class="fb"><div class="ft" style="color:var(--ac)">Infos entreprise</div><div style="font-size:.8rem;color:var(--tx2);display:grid;grid-template-columns:1fr 1fr;gap:5px 10px"><span style="color:var(--mu)">Entreprise</span><strong>'+settings.nom+'</strong><span style="color:var(--mu)">President</span><strong>'+(settings.gerant||'---')+'</strong><span style="color:var(--mu)">SIRET</span><strong>'+(settings.siret||'---')+'</strong><span style="color:var(--mu)">Forme</span><strong>SASU</strong><span style="color:var(--mu)">Exercice</span><strong>01/01/'+filterYear+' - 31/12/'+filterYear+'</strong></div></div><div class="mgrid">'+mc+'</div><div class="twrap"><div style="overflow-x:auto"><table><thead><tr><th>Mois</th><th class="r">CA</th><th class="r">Achats</th><th class="r">Resultat</th></tr></thead><tbody>'+tr+'</tbody><tfoot><tr><td>TOTAL '+filterYear+'</td><td class="r" style="color:var(--gn)">'+yt.toFixed(2)+' EUR</td><td class="r" style="color:var(--rd)">-'+ya.toFixed(2)+' EUR</td><td class="r" style="color:var(--ac)">'+(yt-ya).toFixed(2)+' EUR</td></tr></tfoot></table></div></div><div class="sp"></div>';
 }
 
 function renderImpaye(c){
